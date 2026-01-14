@@ -1,5 +1,10 @@
 import { z } from 'zod';
 
+const arrayStringSchema = z.preprocess(
+  (val) => (val === undefined || val === null ? [] : val),
+  z.array(z.string())
+);
+
 export const questionnaireSchema = z.object({
   name: z.string().min(1, '必須項目です'),
   sex: z.enum(['male', 'female'], {
@@ -12,10 +17,10 @@ export const questionnaireSchema = z.object({
   address: z.string().optional(),
   has_insurance: z.boolean().nullable(),
   nationality: z.string().optional(),
-  symptoms: z.array(z.string()).optional().default([]),
+  symptoms: arrayStringSchema,
   symptom_other: z.string().optional(),
   has_allergy: z.boolean().nullable(),
-  allergy_types: z.array(z.string()).optional().default([]),
+  allergy_types: arrayStringSchema,
   allergy_other: z.string().optional(),
   is_medicating: z.boolean().nullable(),
   medication_detail: z.string().optional(),
@@ -24,11 +29,11 @@ export const questionnaireSchema = z.object({
   is_pregnant: z.boolean().nullable(),
   pregnancy_months: z.number().int().min(1).max(10).nullable(),
   is_lactating: z.boolean().nullable(),
-  past_diseases: z.array(z.string()).optional().default([]),
+  past_diseases: arrayStringSchema,
   disease_other: z.string().optional(),
   has_under_treatment: z.boolean().nullable(),
   disease_under_treatment_detail: z.string().optional(),
-  treatment_preferences: z.array(z.string()).optional().default([]),
+  treatment_preferences: arrayStringSchema,
   treatment_other: z.string().optional(),
   can_bring_interpreter: z.boolean().nullable(),
   visit_year: z.number().int().min(2000).max(new Date().getFullYear() + 1).nullable(),
