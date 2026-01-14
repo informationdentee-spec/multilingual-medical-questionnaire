@@ -18,7 +18,7 @@ export function QuestionnaireForm({ slug, locale, questionsJson }: Questionnaire
     formState: { errors },
     watch,
     setValue,
-  } = useForm<QuestionnaireFormInput>({
+  } = useForm({
     resolver: zodResolver(questionnaireSchema),
     defaultValues: {
       symptoms: [] as string[],
@@ -26,7 +26,7 @@ export function QuestionnaireForm({ slug, locale, questionsJson }: Questionnaire
       past_diseases: [] as string[],
       treatment_preferences: [] as string[],
     },
-  });
+  }) as ReturnType<typeof useForm<QuestionnaireFormInput>>;
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
