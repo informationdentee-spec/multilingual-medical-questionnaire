@@ -1,5 +1,6 @@
 import { notFound } from 'next/navigation';
 import { getRequestConfig } from 'next-intl/server';
+import { RequestConfig } from 'next-intl/server';
 
 export const locales = [
   'ja', 'zh', 'ko', 'tl', 'pt', 'es', 'vi', 'en', 'th', 'id', 
@@ -9,12 +10,18 @@ export const locales = [
 
 export type Locale = typeof locales[number];
 
-export default getRequestConfig(async ({ locale }) => {
+export default getRequestConfig(async ({ locale }): Promise<RequestConfig> => {
+  // Validate that the incoming `locale` parameter is valid
   if (!locales.includes(locale as Locale)) {
     notFound();
   }
 
+  // Load messages for the locale
+  const messages = (await import(`./locales/${locale}.json`)).default;
+
+  // Return RequestConfig with required locale property
   return {
-    messages: (await import(`./locales/${locale}.json`)).default
+    locale,
+    messages
   };
 });
