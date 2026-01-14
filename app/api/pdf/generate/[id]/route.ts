@@ -153,11 +153,14 @@ export async function POST(
     console.error('Error generating PDF:', error);
     
     // Update pdf_generating to false on error
-    await supabaseAdmin
-      .from('questionnaires')
-      .update({ pdf_generating: false })
-      .eq('id', params.id)
-      .catch(console.error);
+    try {
+      await supabaseAdmin
+        .from('questionnaires')
+        .update({ pdf_generating: false })
+        .eq('id', params.id);
+    } catch (updateError) {
+      console.error('Error updating pdf_generating flag:', updateError);
+    }
 
     return NextResponse.json(
       { error: 'Internal server error' },

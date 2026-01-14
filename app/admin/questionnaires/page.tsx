@@ -21,16 +21,6 @@ export default function QuestionnairesPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  useEffect(() => {
-    checkAuth();
-  }, []);
-
-  useEffect(() => {
-    if (page > 0) {
-      fetchQuestionnaires();
-    }
-  }, [page]);
-
   const checkAuth = async () => {
     try {
       const response = await fetch('/api/auth/session');
@@ -42,6 +32,10 @@ export default function QuestionnairesPage() {
       router.push('/admin/login');
     }
   };
+
+  useEffect(() => {
+    checkAuth();
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const fetchQuestionnaires = async () => {
     setLoading(true);
@@ -64,6 +58,12 @@ export default function QuestionnairesPage() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (page > 0) {
+      fetchQuestionnaires();
+    }
+  }, [page]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleLogout = async () => {
     await fetch('/api/auth/logout', { method: 'POST' });

@@ -12,10 +12,6 @@ export default function PreviewPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  useEffect(() => {
-    fetchPDF();
-  }, [id]);
-
   const fetchPDF = async () => {
     try {
       const response = await fetch(`/api/pdf/${id}`);
@@ -49,6 +45,10 @@ export default function PreviewPage() {
       };
     }
   };
+
+  useEffect(() => {
+    fetchPDF();
+  }, [id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (loading) {
     return (
