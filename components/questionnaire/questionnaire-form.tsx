@@ -21,10 +21,10 @@ export function QuestionnaireForm({ slug, locale, questionsJson }: Questionnaire
   } = useForm<QuestionnaireFormInput>({
     resolver: zodResolver(questionnaireSchema),
     defaultValues: {
-      symptoms: [],
-      allergy_types: [],
-      past_diseases: [],
-      treatment_preferences: [],
+      symptoms: [] as string[],
+      allergy_types: [] as string[],
+      past_diseases: [] as string[],
+      treatment_preferences: [] as string[],
     },
   });
 
