@@ -1,0 +1,27 @@
+{
+  "common": {
+    "title": "Questionnaire Dentaire",
+    "selectLanguage": "Sélectionner la Langue",
+    "submit": "Soumettre",
+    "confirm": "Confirmer",
+    "edit": "Modifier",
+    "back": "Retour"
+  },
+  "errors": {
+    "required": "Ce champ est obligatoire",
+    "invalidEmail": "Format d'email invalide",
+    "passwordMismatch": "Les mots de passe ne correspondent pas"
+  },
+  "confirm": {
+    "title": "Confirmer",
+    "reviewMessage": "Veuillez vérifier les informations suivantes"
+  },
+  "pdf": {
+    "title": "Questionnaire Dentaire"
+  },
+  "complete": {
+    "title": "Enregistré",
+    "message": "Questionnaire enregistré avec succès",
+    "newQuestionnaire": "Saisir un Nouveau Questionnaire"
+  }
+}

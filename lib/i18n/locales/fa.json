@@ -1,0 +1,27 @@
+{
+  "common": {
+    "title": "پرسشنامه دندانپزشکی",
+    "selectLanguage": "انتخاب زبان",
+    "submit": "ارسال",
+    "confirm": "تأیید",
+    "edit": "ویرایش",
+    "back": "بازگشت"
+  },
+  "errors": {
+    "required": "این فیلد الزامی است",
+    "invalidEmail": "فرمت ایمیل نامعتبر است",
+    "passwordMismatch": "رمزهای عبور مطابقت ندارند"
+  },
+  "confirm": {
+    "title": "تأیید",
+    "reviewMessage": "لطفاً اطلاعات زیر را بررسی کنید"
+  },
+  "pdf": {
+    "title": "پرسشنامه دندانپزشکی"
+  },
+  "complete": {
+    "title": "ذخیره شد",
+    "message": "پرسشنامه با موفقیت ذخیره شد",
+    "newQuestionnaire": "وارد کردن پرسشنامه جدید"
+  }
+}

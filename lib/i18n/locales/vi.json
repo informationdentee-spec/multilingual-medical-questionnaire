@@ -1,0 +1,27 @@
+{
+  "common": {
+    "title": "Phiếu Khám Răng",
+    "selectLanguage": "Chọn Ngôn Ngữ",
+    "submit": "Gửi",
+    "confirm": "Xác Nhận",
+    "edit": "Chỉnh Sửa",
+    "back": "Quay Lại"
+  },
+  "errors": {
+    "required": "Trường này là bắt buộc",
+    "invalidEmail": "Định dạng email không hợp lệ",
+    "passwordMismatch": "Mật khẩu không khớp"
+  },
+  "confirm": {
+    "title": "Xác Nhận",
+    "reviewMessage": "Vui lòng xem lại thông tin sau"
+  },
+  "pdf": {
+    "title": "Phiếu Khám Răng"
+  },
+  "complete": {
+    "title": "Đã Lưu",
+    "message": "Phiếu khám đã được lưu thành công",
+    "newQuestionnaire": "Nhập Phiếu Khám Mới"
+  }
+}

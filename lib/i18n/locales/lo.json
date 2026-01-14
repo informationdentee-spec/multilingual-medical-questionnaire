@@ -1,0 +1,27 @@
+{
+  "common": {
+    "title": "ແບບສອບຖາມທາງທັນຕະກຳ",
+    "selectLanguage": "ເລືອກພາສາ",
+    "submit": "ສົ່ງ",
+    "confirm": "ຢືນຢັນ",
+    "edit": "ແກ້ໄຂ",
+    "back": "ກັບຄືນ"
+  },
+  "errors": {
+    "required": "ຊ່ອງນີ້ຈຳເປັນ",
+    "invalidEmail": "ຮູບແບບອີເມວບໍ່ຖືກຕ້ອງ",
+    "passwordMismatch": "ລະຫັດຜ່ານບໍ່ກົງກັນ"
+  },
+  "confirm": {
+    "title": "ຢືນຢັນ",
+    "reviewMessage": "ກະລຸນາກວດສອບຂໍ້ມູນຕໍ່ໄປນີ້"
+  },
+  "pdf": {
+    "title": "ແບບສອບຖາມທາງທັນຕະກຳ"
+  },
+  "complete": {
+    "title": "ບັນທຶກແລ້ວ",
+    "message": "ບັນທຶກແບບສອບຖາມສຳເລັດແລ້ວ",
+    "newQuestionnaire": "ໃສ່ແບບສອບຖາມໃໝ່"
+  }
+}

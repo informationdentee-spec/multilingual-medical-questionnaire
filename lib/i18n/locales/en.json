@@ -1,0 +1,27 @@
+{
+  "common": {
+    "title": "Dental Questionnaire",
+    "selectLanguage": "Select Language",
+    "submit": "Submit",
+    "confirm": "Confirm",
+    "edit": "Edit",
+    "back": "Back"
+  },
+  "errors": {
+    "required": "This field is required",
+    "invalidEmail": "Invalid email format",
+    "passwordMismatch": "Passwords do not match"
+  },
+  "confirm": {
+    "title": "Confirm",
+    "reviewMessage": "Please review the following information"
+  },
+  "pdf": {
+    "title": "Dental Questionnaire"
+  },
+  "complete": {
+    "title": "Saved",
+    "message": "Questionnaire saved successfully",
+    "newQuestionnaire": "Enter New Questionnaire"
+  }
+}

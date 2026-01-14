@@ -1,0 +1,27 @@
+{
+  "common": {
+    "title": "Questionário Odontológico",
+    "selectLanguage": "Selecionar Idioma",
+    "submit": "Enviar",
+    "confirm": "Confirmar",
+    "edit": "Editar",
+    "back": "Voltar"
+  },
+  "errors": {
+    "required": "Este campo é obrigatório",
+    "invalidEmail": "Formato de email inválido",
+    "passwordMismatch": "As senhas não coincidem"
+  },
+  "confirm": {
+    "title": "Confirmar",
+    "reviewMessage": "Por favor, revise as seguintes informações"
+  },
+  "pdf": {
+    "title": "Questionário Odontológico"
+  },
+  "complete": {
+    "title": "Salvo",
+    "message": "Questionário salvo com sucesso",
+    "newQuestionnaire": "Inserir Novo Questionário"
+  }
+}

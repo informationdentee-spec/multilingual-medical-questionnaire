@@ -1,0 +1,27 @@
+{
+  "common": {
+    "title": "Stomatološki Upitnik",
+    "selectLanguage": "Odaberi Jezik",
+    "submit": "Pošalji",
+    "confirm": "Potvrdi",
+    "edit": "Uredi",
+    "back": "Natrag"
+  },
+  "errors": {
+    "required": "Ovo polje je obavezno",
+    "invalidEmail": "Nevažeći format e-pošte",
+    "passwordMismatch": "Lozinke se ne podudaraju"
+  },
+  "confirm": {
+    "title": "Potvrdi",
+    "reviewMessage": "Molimo pregledajte sljedeće informacije"
+  },
+  "pdf": {
+    "title": "Stomatološki Upitnik"
+  },
+  "complete": {
+    "title": "Spremljeno",
+    "message": "Upitnik je uspješno spremljen",
+    "newQuestionnaire": "Unesi Novi Upitnik"
+  }
+}

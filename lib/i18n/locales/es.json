@@ -1,0 +1,27 @@
+{
+  "common": {
+    "title": "Cuestionario Dental",
+    "selectLanguage": "Seleccionar Idioma",
+    "submit": "Enviar",
+    "confirm": "Confirmar",
+    "edit": "Editar",
+    "back": "Volver"
+  },
+  "errors": {
+    "required": "Este campo es obligatorio",
+    "invalidEmail": "Formato de email inválido",
+    "passwordMismatch": "Las contraseñas no coinciden"
+  },
+  "confirm": {
+    "title": "Confirmar",
+    "reviewMessage": "Por favor, revise la siguiente información"
+  },
+  "pdf": {
+    "title": "Cuestionario Dental"
+  },
+  "complete": {
+    "title": "Guardado",
+    "message": "Cuestionario guardado exitosamente",
+    "newQuestionnaire": "Ingresar Nuevo Cuestionario"
+  }
+}

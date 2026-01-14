@@ -1,0 +1,27 @@
+{
+  "common": {
+    "title": "牙科问诊表",
+    "selectLanguage": "选择语言",
+    "submit": "提交",
+    "confirm": "确认",
+    "edit": "编辑",
+    "back": "返回"
+  },
+  "errors": {
+    "required": "必填项",
+    "invalidEmail": "电子邮件格式不正确",
+    "passwordMismatch": "密码不匹配"
+  },
+  "confirm": {
+    "title": "确认",
+    "reviewMessage": "请确认以下内容"
+  },
+  "pdf": {
+    "title": "牙科问诊表"
+  },
+  "complete": {
+    "title": "保存完成",
+    "message": "问诊表已保存",
+    "newQuestionnaire": "输入新的问诊表"
+  }
+}

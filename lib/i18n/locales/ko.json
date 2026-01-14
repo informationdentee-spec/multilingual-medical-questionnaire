@@ -1,0 +1,27 @@
+{
+  "common": {
+    "title": "치과 문진표",
+    "selectLanguage": "언어 선택",
+    "submit": "제출",
+    "confirm": "확인",
+    "edit": "편집",
+    "back": "뒤로"
+  },
+  "errors": {
+    "required": "필수 항목입니다",
+    "invalidEmail": "이메일 형식이 올바르지 않습니다",
+    "passwordMismatch": "비밀번호가 일치하지 않습니다"
+  },
+  "confirm": {
+    "title": "확인",
+    "reviewMessage": "다음 내용을 확인해주세요"
+  },
+  "pdf": {
+    "title": "치과 문진표"
+  },
+  "complete": {
+    "title": "저장 완료",
+    "message": "문진표가 저장되었습니다",
+    "newQuestionnaire": "새 문진표 입력"
+  }
+}

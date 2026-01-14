@@ -1,0 +1,27 @@
+{
+  "common": {
+    "title": "Zahnärztlicher Fragebogen",
+    "selectLanguage": "Sprache auswählen",
+    "submit": "Absenden",
+    "confirm": "Bestätigen",
+    "edit": "Bearbeiten",
+    "back": "Zurück"
+  },
+  "errors": {
+    "required": "Dieses Feld ist erforderlich",
+    "invalidEmail": "Ungültiges E-Mail-Format",
+    "passwordMismatch": "Passwörter stimmen nicht überein"
+  },
+  "confirm": {
+    "title": "Bestätigen",
+    "reviewMessage": "Bitte überprüfen Sie die folgenden Informationen"
+  },
+  "pdf": {
+    "title": "Zahnärztlicher Fragebogen"
+  },
+  "complete": {
+    "title": "Gespeichert",
+    "message": "Fragebogen erfolgreich gespeichert",
+    "newQuestionnaire": "Neuen Fragebogen eingeben"
+  }
+}

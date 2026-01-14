@@ -1,0 +1,27 @@
+{
+  "common": {
+    "title": "歯科問診票",
+    "selectLanguage": "言語を選択",
+    "submit": "送信",
+    "confirm": "確認",
+    "edit": "編集",
+    "back": "戻る"
+  },
+  "errors": {
+    "required": "必須項目です",
+    "invalidEmail": "メールアドレスの形式が正しくありません",
+    "passwordMismatch": "パスワードが一致しません"
+  },
+  "confirm": {
+    "title": "確認",
+    "reviewMessage": "以下の内容をご確認ください"
+  },
+  "pdf": {
+    "title": "歯科問診票"
+  },
+  "complete": {
+    "title": "保存完了",
+    "message": "問診票を保存しました",
+    "newQuestionnaire": "新しい問診票を入力する"
+  }
+}

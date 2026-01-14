@@ -1,0 +1,27 @@
+{
+  "common": {
+    "title": "แบบสอบถามทันตกรรม",
+    "selectLanguage": "เลือกภาษา",
+    "submit": "ส่ง",
+    "confirm": "ยืนยัน",
+    "edit": "แก้ไข",
+    "back": "กลับ"
+  },
+  "errors": {
+    "required": "ฟิลด์นี้จำเป็น",
+    "invalidEmail": "รูปแบบอีเมลไม่ถูกต้อง",
+    "passwordMismatch": "รหัสผ่านไม่ตรงกัน"
+  },
+  "confirm": {
+    "title": "ยืนยัน",
+    "reviewMessage": "กรุณาตรวจสอบข้อมูลต่อไปนี้"
+  },
+  "pdf": {
+    "title": "แบบสอบถามทันตกรรม"
+  },
+  "complete": {
+    "title": "บันทึกแล้ว",
+    "message": "บันทึกแบบสอบถามสำเร็จ",
+    "newQuestionnaire": "กรอกแบบสอบถามใหม่"
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "common": {
+    "title": "Kuesioner Gigi",
+    "selectLanguage": "Pilih Bahasa",
+    "submit": "Kirim",
+    "confirm": "Konfirmasi",
+    "edit": "Edit",
+    "back": "Kembali"
+  },
+  "errors": {
+    "required": "Field ini wajib diisi",
+    "invalidEmail": "Format email tidak valid",
+    "passwordMismatch": "Password tidak cocok"
+  },
+  "confirm": {
+    "title": "Konfirmasi",
+    "reviewMessage": "Silakan tinjau informasi berikut"
+  },
+  "pdf": {
+    "title": "Kuesioner Gigi"
+  },
+  "complete": {
+    "title": "Tersimpan",
+    "message": "Kuesioner berhasil disimpan",
+    "newQuestionnaire": "Masukkan Kuesioner Baru"
+  }
+}

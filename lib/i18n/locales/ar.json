@@ -1,0 +1,27 @@
+{
+  "common": {
+    "title": "استبيان طب الأسنان",
+    "selectLanguage": "اختر اللغة",
+    "submit": "إرسال",
+    "confirm": "تأكيد",
+    "edit": "تعديل",
+    "back": "رجوع"
+  },
+  "errors": {
+    "required": "هذا الحقل مطلوب",
+    "invalidEmail": "تنسيق البريد الإلكتروني غير صالح",
+    "passwordMismatch": "كلمات المرور غير متطابقة"
+  },
+  "confirm": {
+    "title": "تأكيد",
+    "reviewMessage": "يرجى مراجعة المعلومات التالية"
+  },
+  "pdf": {
+    "title": "استبيان طب الأسنان"
+  },
+  "complete": {
+    "title": "تم الحفظ",
+    "message": "تم حفظ الاستبيان بنجاح",
+    "newQuestionnaire": "إدخال استبيان جديد"
+  }
+}

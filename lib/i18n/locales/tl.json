@@ -1,0 +1,27 @@
+{
+  "common": {
+    "title": "Questionnaire sa Dental",
+    "selectLanguage": "Pumili ng Wika",
+    "submit": "Ipasa",
+    "confirm": "Kumpirmahin",
+    "edit": "I-edit",
+    "back": "Bumalik"
+  },
+  "errors": {
+    "required": "Kinakailangan ang field na ito",
+    "invalidEmail": "Hindi wasto ang format ng email",
+    "passwordMismatch": "Hindi tumugma ang mga password"
+  },
+  "confirm": {
+    "title": "Kumpirmahin",
+    "reviewMessage": "Mangyaring suriin ang sumusunod na impormasyon"
+  },
+  "pdf": {
+    "title": "Questionnaire sa Dental"
+  },
+  "complete": {
+    "title": "Nai-save",
+    "message": "Matagumpay na na-save ang questionnaire",
+    "newQuestionnaire": "Maglagay ng Bagong Questionnaire"
+  }
+}
