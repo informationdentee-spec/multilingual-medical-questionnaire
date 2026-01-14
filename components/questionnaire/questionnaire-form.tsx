@@ -18,15 +18,15 @@ export function QuestionnaireForm({ slug, locale, questionsJson }: Questionnaire
     formState: { errors },
     watch,
     setValue,
-  } = useForm({
-    resolver: zodResolver(questionnaireSchema),
+  } = useForm<QuestionnaireFormInput>({
+    resolver: zodResolver(questionnaireSchema) as any,
     defaultValues: {
-      symptoms: [] as string[],
-      allergy_types: [] as string[],
-      past_diseases: [] as string[],
-      treatment_preferences: [] as string[],
+      symptoms: [],
+      allergy_types: [],
+      past_diseases: [],
+      treatment_preferences: [],
     },
-  }) as ReturnType<typeof useForm<QuestionnaireFormInput>>;
+  });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
