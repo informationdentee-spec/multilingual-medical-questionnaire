@@ -4,10 +4,7 @@ import { QuestionnaireForm } from '@/components/questionnaire/questionnaire-form
 import { supabaseAdmin } from '@/lib/supabase/server';
 
 interface PageProps {
-  params: {
-    slug: string;
-    locale: string;
-  };
+  params: Promise<{ slug: string | string[] | undefined; locale: string | string[] | undefined }> | { slug: string | string[] | undefined; locale: string | string[] | undefined };
 }
 
 async function getTemplate(slug: string) {
@@ -37,11 +34,25 @@ async function getTemplate(slug: string) {
 }
 
 export default async function QuestionnairePage({ params }: PageProps) {
-  if (!locales.includes(params.locale as any)) {
+  // Handle both Promise and direct params (Next.js 14 compatibility)
+  const resolvedParams = params instanceof Promise ? await params : params;
+  
+  // Ensure slug is a string
+  const slug: string = Array.isArray(resolvedParams.slug) 
+    ? resolvedParams.slug[0] ?? ''
+    : (resolvedParams.slug ?? '');
+  
+  // Ensure locale is a string
+  const locale: string = Array.isArray(resolvedParams.locale) 
+    ? resolvedParams.locale[0] ?? 'ja'
+    : (resolvedParams.locale ?? 'ja');
+
+  // Validate locale
+  if (!locale || typeof locale !== 'string' || !slug || typeof slug !== 'string' || !locales.includes(locale as any)) {
     notFound();
   }
 
-  const questionsJson = await getTemplate(params.slug);
+  const questionsJson = await getTemplate(slug);
 
   if (!questionsJson) {
     return (
@@ -54,8 +65,8 @@ export default async function QuestionnairePage({ params }: PageProps) {
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <QuestionnaireForm
-        slug={params.slug}
-        locale={params.locale}
+        slug={slug}
+        locale={locale}
         questionsJson={questionsJson}
       />
     </div>

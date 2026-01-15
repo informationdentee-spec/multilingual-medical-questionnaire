@@ -5,8 +5,16 @@ import { useRouter, useParams } from 'next/navigation';
 export default function CompletePage() {
   const router = useRouter();
   const params = useParams();
-  const slug = params.slug as string;
-  const locale = params.locale as string;
+  
+  // Ensure slug is a string
+  const slug: string = Array.isArray(params.slug) 
+    ? params.slug[0] ?? ''
+    : (params.slug ?? '');
+  
+  // Ensure locale is a string
+  const locale: string = Array.isArray(params.locale) 
+    ? params.locale[0] ?? 'ja'
+    : (params.locale ?? 'ja');
 
   const handleNewQuestionnaire = () => {
     router.push(`/clinic/${slug}/select-language`);

@@ -9,12 +9,21 @@ export function generateStaticParams() {
 
 export default async function LocaleLayout({
   children,
-  params: { locale }
+  params
 }: {
   children: React.ReactNode;
-  params: { locale: string };
+  params: Promise<{ locale: string | string[] | undefined }> | { locale: string | string[] | undefined };
 }) {
-  if (!locales.includes(locale as any)) {
+  // Handle both Promise and direct params (Next.js 14 compatibility)
+  const resolvedParams = params instanceof Promise ? await params : params;
+  
+  // Ensure locale is a string
+  const locale: string = Array.isArray(resolvedParams.locale) 
+    ? resolvedParams.locale[0] ?? 'ja'
+    : (resolvedParams.locale ?? 'ja');
+
+  // Validate locale
+  if (!locale || typeof locale !== 'string' || !locales.includes(locale as any)) {
     notFound();
   }
 

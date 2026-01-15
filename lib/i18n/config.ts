@@ -11,17 +11,22 @@ export const locales = [
 export type Locale = typeof locales[number];
 
 export default getRequestConfig(async ({ locale }): Promise<RequestConfig> => {
-  // Validate that the incoming `locale` parameter is valid
-  if (!locales.includes(locale as Locale)) {
+  // Ensure locale is defined (handle undefined case)
+  // Use default locale 'ja' if locale is undefined or not a string
+  const validLocale: string = (typeof locale === 'string' && locale) ? locale : 'ja';
+
+  // Validate that the locale is in the allowed locales list
+  if (!validLocale || !locales.includes(validLocale as Locale)) {
     notFound();
   }
 
+  // At this point, validLocale is guaranteed to be a string and valid locale
   // Load messages for the locale
-  const messages = (await import(`./locales/${locale}.json`)).default;
+  const messages = (await import(`./locales/${validLocale}.json`)).default;
 
-  // Return RequestConfig with required locale property
+  // Return RequestConfig with required locale property (validLocale is string)
   return {
-    locale,
+    locale: validLocale,
     messages
   };
 });
