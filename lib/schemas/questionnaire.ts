@@ -2,9 +2,7 @@ import { z } from 'zod';
 
 export const questionnaireSchema = z.object({
   name: z.string().min(1, '必須項目です'),
-  sex: z.enum(['male', 'female'], {
-    required_error: '必須項目です',
-  }),
+  sex: z.enum(['male', 'female']).refine((v) => v !== undefined, { message: '必須項目です' }),
   birth_year: z.number().int().min(1900).max(new Date().getFullYear()).nullable(),
   birth_month: z.number().int().min(1).max(12).nullable(),
   birth_day: z.number().int().min(1).max(31).nullable(),
