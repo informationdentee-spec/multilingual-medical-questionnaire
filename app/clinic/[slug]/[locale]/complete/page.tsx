@@ -17,7 +17,7 @@ export default function CompletePage() {
     : (params.locale ?? 'ja');
 
   const handleNewQuestionnaire = () => {
-    router.push(`/clinic/${slug}/select-language`);
+    router.push(`/clinic/${slug}`);
   };
 
   return (
