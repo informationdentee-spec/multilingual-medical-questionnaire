@@ -8,16 +8,16 @@ interface LanguageButtonProps {
     name: string;
     nativeName: string;
   };
-  slug: string;
+  clinicId: string;
 }
 
-export function LanguageButton({ language, slug }: LanguageButtonProps) {
+export function LanguageButton({ language, clinicId }: LanguageButtonProps) {
   const router = useRouter();
 
   function handleSelect() {
     if (typeof window !== 'undefined') {
       sessionStorage.setItem('selectedLanguage', language.code);
-      router.push(`/clinic/${slug}/${language.code}/questionnaire`);
+      router.push(`/clinic/${clinicId}/${language.code}/questionnaire`);
     }
   }
 
