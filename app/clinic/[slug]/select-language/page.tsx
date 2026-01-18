@@ -1,15 +1,13 @@
 import { languages } from '@/lib/i18n/languages';
-import { supabase } from '@/lib/supabase/client';
+import { supabaseAdmin } from '@/lib/supabase/server';
 import { LanguageButton } from '@/components/ui/language-button';
 
 interface PageProps {
-  params: {
-    slug: string;
-  };
+  params: Promise<{ slug: string | string[] | undefined }> | { slug: string | string[] | undefined };
 }
 
 async function getTenant(slug: string) {
-  const { data, error } = await supabase
+  const { data, error } = await supabaseAdmin
     .from('tenants')
     .select('id, slug')
     .eq('slug', slug)
@@ -23,7 +21,23 @@ async function getTenant(slug: string) {
 }
 
 export default async function SelectLanguagePage({ params }: PageProps) {
-  const tenant = await getTenant(params.slug);
+  // Handle both Promise and direct params (Next.js 14 compatibility)
+  const resolvedParams = params instanceof Promise ? await params : params;
+  
+  // Ensure slug is a string
+  const slug: string = Array.isArray(resolvedParams.slug) 
+    ? resolvedParams.slug[0] ?? ''
+    : (resolvedParams.slug ?? '');
+
+  if (!slug) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p className="text-red-500">クリニックのスラッグが指定されていません</p>
+      </div>
+    );
+  }
+
+  const tenant = await getTenant(slug);
 
   if (!tenant) {
     return (
@@ -42,7 +56,7 @@ export default async function SelectLanguagePage({ params }: PageProps) {
             <LanguageButton
               key={language.code}
               language={language}
-              slug={params.slug}
+              slug={slug}
             />
           ))}
         </div>
