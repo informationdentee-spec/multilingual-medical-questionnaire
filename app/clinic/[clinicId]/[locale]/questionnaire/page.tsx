@@ -8,7 +8,65 @@ interface PageProps {
 }
 
 async function getTemplate(clinicId: string) {
-  // Get tenant (clinicId is used as slug in database)
+  // Test mode: If clinicId is "test", get standard template or any available template
+  if (clinicId === 'test') {
+    // Try to get standard template
+    const { data: standardTemplate, error: standardError } = await supabaseAdmin
+      .from('form_templates')
+      .select('questions_json')
+      .eq('template_name', '標準テンプレート')
+      .single();
+
+    if (!standardError && standardTemplate && standardTemplate.questions_json) {
+      return standardTemplate.questions_json;
+    }
+
+    // If standard template doesn't exist, try to get any template
+    const { data: anyTemplate, error: anyError } = await supabaseAdmin
+      .from('form_templates')
+      .select('questions_json')
+      .limit(1)
+      .single();
+
+    if (!anyError && anyTemplate && anyTemplate.questions_json) {
+      return anyTemplate.questions_json;
+    }
+
+    // If no template exists, return a minimal test template
+    return {
+      sections: [
+        {
+          id: 'basic',
+          title: {
+            ja: '基本情報',
+            en: 'Basic Information',
+          },
+          fields: [
+            {
+              id: 'name',
+              type: 'text',
+              label: {
+                ja: '氏名',
+                en: 'Name',
+              },
+              required: true,
+            },
+            {
+              id: 'phone',
+              type: 'text',
+              label: {
+                ja: '電話番号',
+                en: 'Phone',
+              },
+              required: false,
+            },
+          ],
+        },
+      ],
+    };
+  }
+
+  // Production mode: Get tenant (clinicId is used as slug in database)
   const { data: tenant, error: tenantError } = await supabaseAdmin
     .from('tenants')
     .select('id, template_id')
