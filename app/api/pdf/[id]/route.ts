@@ -3,6 +3,7 @@ import { supabaseAdmin } from '@/lib/supabase/server';
 import { generatePDF } from '@/lib/pdf/generator';
 import { getTemplate } from '@/lib/templates/get-template';
 import { valueToLabel } from '@/lib/templates/value-to-label';
+import { PDF_TEMPLATE } from '@/lib/pdf/template';
 
 export async function GET(
   request: NextRequest,
@@ -125,20 +126,12 @@ export async function GET(
 
     console.log('[PDF API] Data conversion completed');
 
-    // Step 4: Read HTML template
-    console.log('[PDF API] Step 4: Reading HTML template...');
-    let htmlTemplate: string;
-    try {
-      const { readFileSync } = await import('fs');
-      const { join } = await import('path');
-      const templatePath = join(process.cwd(), 'lib', 'pdf', 'template.html');
-      console.log('[PDF API] Template path:', templatePath);
-      htmlTemplate = readFileSync(templatePath, 'utf-8');
-      console.log('[PDF API] Template file read successfully, length:', htmlTemplate.length);
-    } catch (fileError) {
-      console.error('[PDF API] Error reading template file:', fileError);
-      throw new Error(`Failed to read template file: ${fileError instanceof Error ? fileError.message : 'Unknown error'}`);
-    }
+    // Step 4: Get HTML template
+    // Note: Using imported template constant instead of reading from filesystem
+    // because Vercel serverless functions don't have filesystem access at runtime
+    console.log('[PDF API] Step 4: Getting HTML template...');
+    const htmlTemplate = PDF_TEMPLATE;
+    console.log('[PDF API] Template loaded, length:', htmlTemplate.length);
 
     // Step 5: Generate PDF
     console.log('[PDF API] Step 5: Generating PDF with Puppeteer...');
