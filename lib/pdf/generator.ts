@@ -1,7 +1,5 @@
 import puppeteer from 'puppeteer';
 import { renderTemplate } from './template-engine';
-import { readFileSync } from 'fs';
-import { join } from 'path';
 
 export interface PDFGenerationOptions {
   template: string;
