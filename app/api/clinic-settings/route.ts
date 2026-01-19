@@ -1,9 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase/server';
+import { getAuthenticatedTenant } from '@/lib/middleware/auth';
 
 /**
  * GET /api/clinic-settings?clinic_id=xxx
  * Get clinic settings for a specific clinic
+ * Note: GET is public (no authentication required) for flexibility
  */
 export async function GET(request: NextRequest) {
   try {
@@ -52,9 +54,19 @@ export async function GET(request: NextRequest) {
  * POST /api/clinic-settings
  * Create or update clinic settings
  * Body: { clinic_id: string, printer_email: string }
+ * Requires: Authentication (JWT token in cookie)
  */
 export async function POST(request: NextRequest) {
   try {
+    // Authentication check
+    const tenantId = await getAuthenticatedTenant(request);
+    if (!tenantId) {
+      return NextResponse.json(
+        { error: 'Unauthorized', details: 'Authentication required' },
+        { status: 401 }
+      );
+    }
+
     const body = await request.json();
     const { clinic_id, printer_email } = body;
 
@@ -128,9 +140,19 @@ export async function POST(request: NextRequest) {
 /**
  * DELETE /api/clinic-settings?clinic_id=xxx
  * Delete clinic settings
+ * Requires: Authentication (JWT token in cookie)
  */
 export async function DELETE(request: NextRequest) {
   try {
+    // Authentication check
+    const tenantId = await getAuthenticatedTenant(request);
+    if (!tenantId) {
+      return NextResponse.json(
+        { error: 'Unauthorized', details: 'Authentication required' },
+        { status: 401 }
+      );
+    }
+
     const { searchParams } = new URL(request.url);
     const clinicId = searchParams.get('clinic_id');
 
