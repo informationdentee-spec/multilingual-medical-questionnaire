@@ -23,7 +23,6 @@ export async function GET(request: NextRequest) {
     }
 
     return NextResponse.json({
-      tenant_id: payload.tenant_id,
       email: payload.email,
     });
   } catch (error) {

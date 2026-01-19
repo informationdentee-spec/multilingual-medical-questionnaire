@@ -4,82 +4,79 @@ import { supabaseAdmin } from '@/lib/supabase/server';
 import { verifyToken } from '@/lib/auth/jwt';
 
 export async function GET(request: NextRequest) {
-  const tenantId = await getAuthenticatedTenant();
-  
-  if (!tenantId) {
+  // Check authentication
+  const cookieStore = await cookies();
+  const token = cookieStore.get('auth_token')?.value;
+
+  if (!token) {
     return NextResponse.json(
       { error: 'Unauthorized' },
       { status: 401 }
     );
   }
 
-  return handler(request, tenantId);
-}
-
-async function getAuthenticatedTenant(): Promise<string | null> {
-  const cookieStore = await cookies();
-  const token = cookieStore.get('auth_token')?.value;
-
-  if (!token) {
-    return null;
+  const payload = verifyToken(token);
+  if (!payload) {
+    return NextResponse.json(
+      { error: 'Unauthorized' },
+      { status: 401 }
+    );
   }
 
-  const payload = verifyToken(token);
-  return payload?.tenant_id || null;
-}
-
-async function handler(request: NextRequest, tenantId: string) {
   try {
-    // Get tenant's clinic_id (slug) from tenant
-    const { data: tenant, error: tenantError } = await supabaseAdmin
-      .from('tenants')
-      .select('slug')
-      .eq('id', tenantId)
-      .single();
+    // Get optional clinic_id filter from query params
+    const { searchParams } = new URL(request.url);
+    const clinicId = searchParams.get('clinic_id');
 
-    if (tenantError || !tenant) {
-      return NextResponse.json(
-        { error: 'Tenant not found' },
-        { status: 404 }
-      );
+    // Build query
+    let query = supabaseAdmin
+      .from('questionnaire_responses')
+      .select('*', { count: 'exact', head: true });
+
+    if (clinicId) {
+      query = query.eq('clinic_id', clinicId);
     }
 
-    const clinicId = tenant.slug;
-
     // Get total count
-    const { count: total } = await supabaseAdmin
-      .from('questionnaire_responses')
-      .select('*', { count: 'exact', head: true })
-      .eq('clinic_id', clinicId);
+    const { count: total } = await query;
 
     // Get today's count
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    const { count: todayCount } = await supabaseAdmin
+    let todayQuery = supabaseAdmin
       .from('questionnaire_responses')
       .select('*', { count: 'exact', head: true })
-      .eq('clinic_id', clinicId)
       .gte('created_at', today.toISOString());
+    if (clinicId) {
+      todayQuery = todayQuery.eq('clinic_id', clinicId);
+    }
+    const { count: todayCount } = await todayQuery;
 
     // Get this week's count
     const thisWeek = new Date();
     thisWeek.setDate(thisWeek.getDate() - 7);
     thisWeek.setHours(0, 0, 0, 0);
-    const { count: thisWeekCount } = await supabaseAdmin
+    let thisWeekQuery = supabaseAdmin
       .from('questionnaire_responses')
       .select('*', { count: 'exact', head: true })
-      .eq('clinic_id', clinicId)
       .gte('created_at', thisWeek.toISOString());
+    if (clinicId) {
+      thisWeekQuery = thisWeekQuery.eq('clinic_id', clinicId);
+    }
+    const { count: thisWeekCount } = await thisWeekQuery;
 
     // Get this month's count
     const thisMonth = new Date();
     thisMonth.setDate(1);
     thisMonth.setHours(0, 0, 0, 0);
-    const { count: thisMonthCount } = await supabaseAdmin
+    let thisMonthQuery = supabaseAdmin
       .from('questionnaire_responses')
       .select('*', { count: 'exact', head: true })
-      .eq('clinic_id', clinicId)
       .gte('created_at', thisMonth.toISOString());
+    if (clinicId) {
+      thisMonthQuery = thisMonthQuery.eq('clinic_id', clinicId);
+    }
+    const { count: thisMonthCount } = await thisMonthQuery;
 
     return NextResponse.json({
       total: total || 0,

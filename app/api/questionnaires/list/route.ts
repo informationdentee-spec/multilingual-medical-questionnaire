@@ -4,42 +4,35 @@ import { supabaseAdmin } from '@/lib/supabase/server';
 import { verifyToken } from '@/lib/auth/jwt';
 
 export async function GET(request: NextRequest) {
-  const tenantId = await getAuthenticatedTenant();
-  
-  if (!tenantId) {
+  // Check authentication
+  const cookieStore = await cookies();
+  const token = cookieStore.get('auth_token')?.value;
+
+  if (!token) {
     return NextResponse.json(
       { error: 'Unauthorized' },
       { status: 401 }
     );
   }
 
-  return handler(request, tenantId);
-}
-
-async function getAuthenticatedTenant(): Promise<string | null> {
-  const cookieStore = await cookies();
-  const token = cookieStore.get('auth_token')?.value;
-
-  if (!token) {
-    return null;
+  const payload = verifyToken(token);
+  if (!payload) {
+    return NextResponse.json(
+      { error: 'Unauthorized' },
+      { status: 401 }
+    );
   }
 
-  const payload = verifyToken(token);
-  return payload?.tenant_id || null;
-}
-
-async function handler(request: NextRequest, tenantId: string) {
   try {
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get('page') || '1', 10);
     const pageSize = 20;
     const offset = (page - 1) * pageSize;
 
-    // Get questionnaires for this tenant
+    // Get all questionnaires (no tenant_id filter - authenticated users can access all)
     const { data: questionnaires, error } = await supabaseAdmin
       .from('questionnaires')
       .select('id, name, language, created_at, pdf_url, pdf_generating')
-      .eq('tenant_id', tenantId)
       .order('created_at', { ascending: false })
       .range(offset, offset + pageSize - 1);
 
@@ -54,8 +47,7 @@ async function handler(request: NextRequest, tenantId: string) {
     // Get total count
     const { count } = await supabaseAdmin
       .from('questionnaires')
-      .select('*', { count: 'exact', head: true })
-      .eq('tenant_id', tenantId);
+      .select('*', { count: 'exact', head: true });
 
     return NextResponse.json({
       questionnaires: questionnaires || [],

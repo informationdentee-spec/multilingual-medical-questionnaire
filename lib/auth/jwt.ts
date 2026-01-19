@@ -3,7 +3,6 @@ import jwt from 'jsonwebtoken';
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
 
 export interface JWTPayload {
-  tenant_id: string;
   email: string;
 }
 

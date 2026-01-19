@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
-import { supabaseAdmin } from '@/lib/supabase/server';
 import { verifyPassword } from '@/lib/auth/password';
 import { signToken } from '@/lib/auth/jwt';
 import { isLocked, recordFailedAttempt, clearAttempts } from '@/lib/auth/login-attempts';
@@ -24,15 +23,21 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Get tenant by email
-    const { data: tenant, error: tenantError } = await supabaseAdmin
-      .from('tenants')
-      .select('id, email, password_hash')
-      .eq('email', email)
-      .single();
+    // Get admin credentials from environment variables
+    const adminEmail = process.env.ADMIN_EMAIL;
+    const adminPasswordHash = process.env.ADMIN_PASSWORD_HASH;
 
-    if (tenantError || !tenant) {
-      console.error('Login error - tenant not found:', tenantError);
+    if (!adminEmail || !adminPasswordHash) {
+      console.error('Admin credentials not configured in environment variables');
+      return NextResponse.json(
+        { error: 'Server configuration error' },
+        { status: 500 }
+      );
+    }
+
+    // Verify email
+    if (email !== adminEmail) {
+      console.error('Login error - invalid email:', email);
       recordFailedAttempt(email);
       return NextResponse.json(
         { error: 'Invalid email or password' },
@@ -41,7 +46,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Verify password
-    const isValid = await verifyPassword(password, tenant.password_hash);
+    const isValid = await verifyPassword(password, adminPasswordHash);
     if (!isValid) {
       console.error('Login error - password verification failed for:', email);
       recordFailedAttempt(email);
@@ -56,8 +61,7 @@ export async function POST(request: NextRequest) {
 
     // Generate JWT token
     const token = signToken({
-      tenant_id: tenant.id,
-      email: tenant.email,
+      email: email,
     });
 
     // Set HTTP-only cookie
@@ -72,7 +76,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       message: 'Login successful',
-      tenant_id: tenant.id,
+      email: email,
     });
   } catch (error) {
     console.error('Error in login:', error);
