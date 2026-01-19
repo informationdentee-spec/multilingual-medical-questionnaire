@@ -24,62 +24,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Declare tenant variable
-    let tenant: { id: string; template_id: string | null } | null = null;
-
-    // Handle test mode
-    if (slug === 'test') {
-      // For test mode, we still need to insert data, but we'll use a dummy tenant_id
-      // In production, you might want to create a test tenant or handle this differently
-      console.warn('Test mode: Using dummy tenant_id for test data');
-      
-      // Try to find or create a test tenant
-      const { data: existingTenant } = await supabaseAdmin
-        .from('tenants')
-        .select('id, template_id')
-        .eq('slug', 'test')
-        .single();
-
-      if (existingTenant) {
-        tenant = existingTenant;
-      } else {
-        // For test mode, we'll skip the insert if no test tenant exists
-        // In a real scenario, you might want to create one or return a different response
-        return NextResponse.json(
-          { 
-            error: 'Test tenant not found', 
-            details: 'Please create a test tenant with slug "test" in the database',
-          },
-          { status: 404 }
-        );
-      }
-    } else {
-      // Get tenant by slug for production mode
-      const { data: tenantData, error: tenantError } = await supabaseAdmin
-        .from('tenants')
-        .select('id, template_id')
-        .eq('slug', slug)
-        .single();
-
-      if (tenantError || !tenantData) {
-        console.error('Tenant error:', tenantError);
-        return NextResponse.json(
-          { error: 'Tenant not found', details: tenantError?.message || 'Tenant not found' },
-          { status: 404 }
-        );
-      }
-
-      tenant = tenantData;
-    }
-
-    // Ensure tenant is not null at this point
-    if (!tenant) {
-      return NextResponse.json(
-        { error: 'Tenant not found', details: 'Failed to retrieve tenant information' },
-        { status: 404 }
-      );
-    }
-
     // Get current date for visit date
     const now = new Date();
     const visitYear = formData.visit_year || now.getFullYear();
@@ -88,8 +32,8 @@ export async function POST(request: NextRequest) {
 
     // Prepare data for insertion with proper type conversion
     const insertData: any = {
-      tenant_id: tenant.id,
-      template_id: tenant.template_id,
+      tenant_id: null, // Not used in current architecture
+      template_id: null, // Not used in current architecture
       language: language,
       pdf_generating: true,
       // Basic information
