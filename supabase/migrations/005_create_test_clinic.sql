@@ -6,13 +6,14 @@
 
 -- Note: The password hash below is for 'test1234' (bcrypt rounds=10)
 -- In production, use a stronger password and generate a new hash
+-- To generate a new hash, run: node -e "const bcrypt = require('bcryptjs'); bcrypt.hash('your-password', 10).then(h => console.log(h));"
 
 INSERT INTO tenants (name, slug, email, password_hash, template_id)
 VALUES (
   'テストクリニック',
   'test',
   'test@example.com',
-  '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy',
+  '$2b$10$lnavnIC6YJwA43CwnInnCuSZgo7l37nZt2JGN549.gQKXm9W9043O',
   NULL
 )
 ON CONFLICT (email) DO UPDATE SET

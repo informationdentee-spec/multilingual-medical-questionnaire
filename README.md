@@ -148,7 +148,7 @@ VALUES (
   'テストクリニック',
   'test',
   'test@example.com',
-  '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy',
+  '$2b$10$lnavnIC6YJwA43CwnInnCuSZgo7l37nZt2JGN549.gQKXm9W9043O',
   NULL
 )
 ON CONFLICT (email) DO UPDATE SET

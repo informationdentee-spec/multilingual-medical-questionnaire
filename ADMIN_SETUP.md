@@ -31,8 +31,7 @@
 3. **以下のSQLを実行**
 
 ```sql
--- パスワード: test1234 のハッシュを生成
--- 注意: 実際のパスワードハッシュは bcrypt で生成する必要があります
+-- パスワード: test1234 のハッシュ
 -- 以下のハッシュは 'test1234' のハッシュです（bcrypt rounds=10）
 
 INSERT INTO tenants (name, slug, email, password_hash, template_id)
@@ -40,10 +39,13 @@ VALUES (
   'テストクリニック',
   'test',
   'test@example.com',
-  '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy',
+  '$2b$10$lnavnIC6YJwA43CwnInnCuSZgo7l37nZt2JGN549.gQKXm9W9043O',
   NULL
 )
-ON CONFLICT (email) DO NOTHING;
+ON CONFLICT (email) DO UPDATE SET
+  password_hash = EXCLUDED.password_hash,
+  name = EXCLUDED.name,
+  slug = EXCLUDED.slug;
 
 -- クリニック設定も作成
 INSERT INTO clinic_settings (clinic_id, printer_email)
