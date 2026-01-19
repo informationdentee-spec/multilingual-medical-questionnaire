@@ -105,7 +105,8 @@ export async function GET(
     });
 
     // Return PDF as binary
-    return new NextResponse(pdfBuffer, {
+    // Convert Buffer to Uint8Array for NextResponse compatibility
+    return new NextResponse(new Uint8Array(pdfBuffer), {
       headers: {
         'Content-Type': 'application/pdf',
         'Content-Disposition': `inline; filename="questionnaire-${id}.pdf"`,
