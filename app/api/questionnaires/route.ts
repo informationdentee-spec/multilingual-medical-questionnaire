@@ -24,6 +24,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Declare tenant variable
+    let tenant: { id: string; template_id: string | null } | null = null;
+
     // Handle test mode
     if (slug === 'test') {
       // For test mode, we still need to insert data, but we'll use a dummy tenant_id
@@ -31,7 +34,6 @@ export async function POST(request: NextRequest) {
       console.warn('Test mode: Using dummy tenant_id for test data');
       
       // Try to find or create a test tenant
-      let tenant;
       const { data: existingTenant } = await supabaseAdmin
         .from('tenants')
         .select('id, template_id')
@@ -68,6 +70,14 @@ export async function POST(request: NextRequest) {
       }
 
       tenant = tenantData;
+    }
+
+    // Ensure tenant is not null at this point
+    if (!tenant) {
+      return NextResponse.json(
+        { error: 'Tenant not found', details: 'Failed to retrieve tenant information' },
+        { status: 404 }
+      );
     }
 
     // Get current date for visit date
