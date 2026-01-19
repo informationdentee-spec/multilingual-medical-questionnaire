@@ -24,6 +24,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       email: payload.email,
+      clinic_id: payload.clinic_id,
     });
   } catch (error) {
     return NextResponse.json(

@@ -16,67 +16,50 @@ export async function GET(request: NextRequest) {
   }
 
   const payload = verifyToken(token);
-  if (!payload) {
+  if (!payload || !payload.clinic_id) {
     return NextResponse.json(
       { error: 'Unauthorized' },
       { status: 401 }
     );
   }
 
+  const clinicId = payload.clinic_id;
+
   try {
-    // Get optional clinic_id filter from query params
-    const { searchParams } = new URL(request.url);
-    const clinicId = searchParams.get('clinic_id');
-
-    // Build query
-    let query = supabaseAdmin
+    // Get total count for this clinic
+    const { count: total } = await supabaseAdmin
       .from('questionnaire_responses')
-      .select('*', { count: 'exact', head: true });
-
-    if (clinicId) {
-      query = query.eq('clinic_id', clinicId);
-    }
-
-    // Get total count
-    const { count: total } = await query;
+      .select('*', { count: 'exact', head: true })
+      .eq('clinic_id', clinicId);
 
     // Get today's count
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    let todayQuery = supabaseAdmin
+    const { count: todayCount } = await supabaseAdmin
       .from('questionnaire_responses')
       .select('*', { count: 'exact', head: true })
+      .eq('clinic_id', clinicId)
       .gte('created_at', today.toISOString());
-    if (clinicId) {
-      todayQuery = todayQuery.eq('clinic_id', clinicId);
-    }
-    const { count: todayCount } = await todayQuery;
 
     // Get this week's count
     const thisWeek = new Date();
     thisWeek.setDate(thisWeek.getDate() - 7);
     thisWeek.setHours(0, 0, 0, 0);
-    let thisWeekQuery = supabaseAdmin
+    const { count: thisWeekCount } = await supabaseAdmin
       .from('questionnaire_responses')
       .select('*', { count: 'exact', head: true })
+      .eq('clinic_id', clinicId)
       .gte('created_at', thisWeek.toISOString());
-    if (clinicId) {
-      thisWeekQuery = thisWeekQuery.eq('clinic_id', clinicId);
-    }
-    const { count: thisWeekCount } = await thisWeekQuery;
 
     // Get this month's count
     const thisMonth = new Date();
     thisMonth.setDate(1);
     thisMonth.setHours(0, 0, 0, 0);
-    let thisMonthQuery = supabaseAdmin
+    const { count: thisMonthCount } = await supabaseAdmin
       .from('questionnaire_responses')
       .select('*', { count: 'exact', head: true })
+      .eq('clinic_id', clinicId)
       .gte('created_at', thisMonth.toISOString());
-    if (clinicId) {
-      thisMonthQuery = thisMonthQuery.eq('clinic_id', clinicId);
-    }
-    const { count: thisMonthCount } = await thisMonthQuery;
 
     return NextResponse.json({
       total: total || 0,

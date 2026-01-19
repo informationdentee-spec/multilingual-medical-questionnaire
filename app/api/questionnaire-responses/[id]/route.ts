@@ -19,21 +19,24 @@ export async function GET(
   }
 
   const payload = verifyToken(token);
-  if (!payload) {
+  if (!payload || !payload.clinic_id) {
     return NextResponse.json(
       { error: 'Unauthorized' },
       { status: 401 }
     );
   }
 
+  const clinicId = payload.clinic_id;
+
   try {
     const { id } = await params;
 
-    // Get questionnaire response (no clinic_id filter - authenticated users can access all)
+    // Get questionnaire response for this clinic
     const { data: response, error } = await supabaseAdmin
       .from('questionnaire_responses')
       .select('*')
       .eq('id', id)
+      .eq('clinic_id', clinicId)
       .single();
 
     if (error || !response) {

@@ -34,9 +34,13 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    // Don't return password hash in response
+    const { admin_password_hash, ...safeSetting } = setting || {};
+
     return NextResponse.json({
       clinic_id: clinicId,
       printer_email: setting?.printer_email || null,
+      admin_email: setting?.admin_email || null,
       exists: !!setting,
     });
   } catch (error) {
@@ -71,52 +75,71 @@ export async function POST(request: NextRequest) {
     }
 
     const payload = verifyToken(token);
-    if (!payload) {
+    if (!payload || !payload.clinic_id) {
       return NextResponse.json(
         { error: 'Unauthorized', details: 'Invalid token' },
         { status: 401 }
       );
     }
 
+    const authenticatedClinicId = payload.clinic_id;
+
     const body = await request.json();
-    const { clinic_id, printer_email } = body;
+    const { clinic_id, printer_email, admin_email, admin_password } = body;
 
-    if (!clinic_id) {
+    // Users can only update their own clinic settings
+    if (clinic_id && clinic_id !== authenticatedClinicId) {
       return NextResponse.json(
-        { error: 'clinic_id is required' },
-        { status: 400 }
+        { error: 'Forbidden', details: 'You can only update your own clinic settings' },
+        { status: 403 }
       );
     }
 
-    if (!printer_email) {
-      return NextResponse.json(
-        { error: 'printer_email is required' },
-        { status: 400 }
-      );
+    // Use authenticated clinic_id if not provided
+    const targetClinicId = clinic_id || authenticatedClinicId;
+
+    // Build update data
+    const updateData: any = {
+      clinic_id: targetClinicId,
+      updated_at: new Date().toISOString(),
+    };
+
+    if (printer_email !== undefined) {
+      // Validate email format
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(printer_email)) {
+        return NextResponse.json(
+          { error: 'Invalid email format' },
+          { status: 400 }
+        );
+      }
+      updateData.printer_email = printer_email;
     }
 
-    // Validate email format
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(printer_email)) {
-      return NextResponse.json(
-        { error: 'Invalid email format' },
-        { status: 400 }
-      );
+    if (admin_email !== undefined) {
+      // Validate email format
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(admin_email)) {
+        return NextResponse.json(
+          { error: 'Invalid admin email format' },
+          { status: 400 }
+        );
+      }
+      updateData.admin_email = admin_email;
+    }
+
+    if (admin_password !== undefined) {
+      // Hash password if provided
+      const { hashPassword } = await import('@/lib/auth/password');
+      updateData.admin_password_hash = await hashPassword(admin_password);
     }
 
     // Upsert clinic settings
     const { data, error } = await supabaseAdmin
       .from('clinic_settings')
-      .upsert(
-        {
-          clinic_id,
-          printer_email,
-          updated_at: new Date().toISOString(),
-        },
-        {
-          onConflict: 'clinic_id',
-        }
-      )
+      .upsert(updateData, {
+        onConflict: 'clinic_id',
+      })
       .select()
       .single();
 
@@ -131,10 +154,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Don't return password hash in response
+    const { admin_password_hash, ...responseData } = data;
+
     return NextResponse.json({
       success: true,
       message: 'Clinic settings saved successfully',
-      data,
+      data: responseData,
     });
   } catch (error) {
     console.error('Error in POST /api/clinic-settings:', error);
@@ -167,20 +193,22 @@ export async function DELETE(request: NextRequest) {
     }
 
     const payload = verifyToken(token);
-    if (!payload) {
+    if (!payload || !payload.clinic_id) {
       return NextResponse.json(
         { error: 'Unauthorized', details: 'Invalid token' },
         { status: 401 }
       );
     }
 
+    const authenticatedClinicId = payload.clinic_id;
     const { searchParams } = new URL(request.url);
     const clinicId = searchParams.get('clinic_id');
 
-    if (!clinicId) {
+    // Users can only delete their own clinic settings
+    if (!clinicId || clinicId !== authenticatedClinicId) {
       return NextResponse.json(
-        { error: 'clinic_id parameter is required' },
-        { status: 400 }
+        { error: 'Forbidden', details: 'You can only delete your own clinic settings' },
+        { status: 403 }
       );
     }
 

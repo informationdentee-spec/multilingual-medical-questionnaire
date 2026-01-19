@@ -16,33 +16,28 @@ export async function GET(request: NextRequest) {
   }
 
   const payload = verifyToken(token);
-  if (!payload) {
+  if (!payload || !payload.clinic_id) {
     return NextResponse.json(
       { error: 'Unauthorized' },
       { status: 401 }
     );
   }
 
+  const clinicId = payload.clinic_id;
+
   try {
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get('page') || '1', 10);
-    const clinicId = searchParams.get('clinic_id');
     const pageSize = 20;
     const offset = (page - 1) * pageSize;
 
-    // Build query
-    let query = supabaseAdmin
+    // Get questionnaire responses for this clinic
+    const { data: responses, error } = await supabaseAdmin
       .from('questionnaire_responses')
       .select('id, clinic_id, locale, data, created_at')
+      .eq('clinic_id', clinicId)
       .order('created_at', { ascending: false })
       .range(offset, offset + pageSize - 1);
-
-    if (clinicId) {
-      query = query.eq('clinic_id', clinicId);
-    }
-
-    // Get questionnaire responses
-    const { data: responses, error } = await query;
 
     if (error) {
       console.error('Error fetching questionnaire responses:', error);
@@ -52,14 +47,11 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Get total count
-    let countQuery = supabaseAdmin
+    // Get total count for this clinic
+    const { count } = await supabaseAdmin
       .from('questionnaire_responses')
-      .select('*', { count: 'exact', head: true });
-    if (clinicId) {
-      countQuery = countQuery.eq('clinic_id', clinicId);
-    }
-    const { count } = await countQuery;
+      .select('*', { count: 'exact', head: true })
+      .eq('clinic_id', clinicId);
 
     // Format responses for display
     const formattedResponses = (responses || []).map((response) => ({

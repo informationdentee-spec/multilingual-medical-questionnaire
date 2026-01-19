@@ -4,6 +4,7 @@ const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-producti
 
 export interface JWTPayload {
   email: string;
+  clinic_id: string;
 }
 
 export function signToken(payload: JWTPayload): string {

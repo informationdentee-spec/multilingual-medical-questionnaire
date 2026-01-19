@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
+import { supabaseAdmin } from '@/lib/supabase/server';
 import { verifyPassword } from '@/lib/auth/password';
 import { signToken } from '@/lib/auth/jwt';
 import { isLocked, recordFailedAttempt, clearAttempts } from '@/lib/auth/login-attempts';
@@ -23,21 +24,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Get admin credentials from environment variables
-    const adminEmail = process.env.ADMIN_EMAIL;
-    const adminPasswordHash = process.env.ADMIN_PASSWORD_HASH;
+    // Get clinic settings by admin email
+    const { data: clinicSettings, error: clinicError } = await supabaseAdmin
+      .from('clinic_settings')
+      .select('clinic_id, admin_email, admin_password_hash')
+      .eq('admin_email', email)
+      .single();
 
-    if (!adminEmail || !adminPasswordHash) {
-      console.error('Admin credentials not configured in environment variables');
-      return NextResponse.json(
-        { error: 'Server configuration error' },
-        { status: 500 }
-      );
-    }
-
-    // Verify email
-    if (email !== adminEmail) {
-      console.error('Login error - invalid email:', email);
+    if (clinicError || !clinicSettings || !clinicSettings.admin_email || !clinicSettings.admin_password_hash) {
+      console.error('Login error - clinic admin not found:', clinicError);
       recordFailedAttempt(email);
       return NextResponse.json(
         { error: 'Invalid email or password' },
@@ -46,7 +41,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Verify password
-    const isValid = await verifyPassword(password, adminPasswordHash);
+    const isValid = await verifyPassword(password, clinicSettings.admin_password_hash);
     if (!isValid) {
       console.error('Login error - password verification failed for:', email);
       recordFailedAttempt(email);
@@ -62,6 +57,7 @@ export async function POST(request: NextRequest) {
     // Generate JWT token
     const token = signToken({
       email: email,
+      clinic_id: clinicSettings.clinic_id,
     });
 
     // Set HTTP-only cookie
@@ -77,6 +73,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       message: 'Login successful',
       email: email,
+      clinic_id: clinicSettings.clinic_id,
     });
   } catch (error) {
     console.error('Error in login:', error);
