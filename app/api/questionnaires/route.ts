@@ -30,12 +30,8 @@ export async function POST(request: NextRequest) {
     const visitMonth = formData.visit_month || now.getMonth() + 1;
     const visitDay = formData.visit_day || now.getDate();
 
-    // Prepare data for insertion with proper type conversion
-    const insertData: any = {
-      tenant_id: null, // Not used in current architecture
-      template_id: null, // Not used in current architecture
-      language: language,
-      pdf_generating: true,
+    // Prepare questionnaire data with proper type conversion for JSON storage
+    const questionnaireData: any = {
       // Basic information
       name: formData.name || null,
       sex: formData.sex || null, // 'male' or 'female'
@@ -78,18 +74,25 @@ export async function POST(request: NextRequest) {
       visit_day: Number(visitDay),
     };
 
+    // Prepare data for insertion into questionnaire_responses table
+    const insertData = {
+      clinic_id: slug,
+      locale: language,
+      data: questionnaireData,
+    };
+
     // Log the prepared data for debugging
     console.log('Prepared insert data:', JSON.stringify(insertData, null, 2));
 
-    // Insert questionnaire
-    const { data: questionnaire, error: insertError } = await supabaseAdmin
-      .from('questionnaires')
+    // Insert questionnaire response
+    const { data: response, error: insertError } = await supabaseAdmin
+      .from('questionnaire_responses')
       .insert(insertData)
       .select()
       .single();
 
-    if (insertError || !questionnaire) {
-      console.error('Error inserting questionnaire:', insertError);
+    if (insertError || !response) {
+      console.error('Error inserting questionnaire response:', insertError);
       console.error('Insert data that failed:', JSON.stringify(insertData, null, 2));
       return NextResponse.json(
         { 
@@ -102,21 +105,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Trigger PDF generation asynchronously (don't await)
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
-    const internalToken = process.env.INTERNAL_API_TOKEN || '';
-    
-    fetch(`${appUrl}/api/pdf/generate/${questionnaire.id}`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${internalToken}`,
-      },
-    }).catch((error) => {
-      console.error('PDF generation failed:', error);
-    });
-
     return NextResponse.json({
-      id: questionnaire.id,
+      id: response.id,
       message: 'Questionnaire saved successfully',
     });
   } catch (error) {
