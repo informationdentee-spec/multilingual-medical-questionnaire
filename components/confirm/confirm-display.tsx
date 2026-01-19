@@ -34,6 +34,13 @@ export function ConfirmDisplay({ questionsJson, clinicId, locale }: ConfirmDispl
     if (!formData) return;
 
     try {
+      // Log the data being sent
+      console.log('Submitting form data:', {
+        clinicId,
+        locale,
+        formData,
+      });
+
       const response = await fetch('/api/questionnaires', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -44,15 +51,27 @@ export function ConfirmDisplay({ questionsJson, clinicId, locale }: ConfirmDispl
         }),
       });
 
+      const responseData = await response.json();
+
       if (response.ok) {
         sessionStorage.removeItem('questionnaireData');
         router.push(`/clinic/${clinicId}/${locale}/complete`);
       } else {
-        alert('保存に失敗しました');
+        // Display detailed error message
+        const errorMessage = responseData.details 
+          ? `保存に失敗しました: ${responseData.details}`
+          : responseData.error 
+          ? `保存に失敗しました: ${responseData.error}`
+          : '保存に失敗しました';
+        console.error('Save error:', responseData);
+        alert(errorMessage);
       }
     } catch (error) {
       console.error('Error submitting form:', error);
-      alert('保存に失敗しました');
+      const errorMessage = error instanceof Error 
+        ? `保存に失敗しました: ${error.message}`
+        : '保存に失敗しました';
+      alert(errorMessage);
     }
   };
 
