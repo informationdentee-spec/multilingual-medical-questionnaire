@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { Resend } from 'resend';
+import { supabaseAdmin } from '@/lib/supabase/server';
 
 export async function POST(
   request: NextRequest,
@@ -8,11 +9,43 @@ export async function POST(
   try {
     const { id } = await params;
 
-    // Get printer email from environment variable
-    const printerEmail = process.env.PRINTER_EMAIL;
+    // Get questionnaire response to retrieve clinic_id
+    const { data: response, error: responseError } = await supabaseAdmin
+      .from('questionnaire_responses')
+      .select('clinic_id')
+      .eq('id', id)
+      .single();
+
+    if (responseError || !response) {
+      return NextResponse.json(
+        { error: 'Questionnaire response not found' },
+        { status: 404 }
+      );
+    }
+
+    // Get printer email from clinic_settings table
+    const { data: clinicSetting, error: settingError } = await supabaseAdmin
+      .from('clinic_settings')
+      .select('printer_email')
+      .eq('clinic_id', response.clinic_id)
+      .single();
+
+    // Fallback to environment variable if clinic setting is not found
+    let printerEmail: string | null = null;
+    
+    if (clinicSetting && clinicSetting.printer_email) {
+      printerEmail = clinicSetting.printer_email;
+    } else {
+      // Fallback to environment variable for backward compatibility
+      printerEmail = process.env.PRINTER_EMAIL || null;
+    }
+
     if (!printerEmail) {
       return NextResponse.json(
-        { error: 'PRINTER_EMAIL environment variable is not set' },
+        { 
+          error: 'Printer email not configured',
+          details: `Please configure printer email for clinic "${response.clinic_id}" in clinic_settings table or set PRINTER_EMAIL environment variable`,
+        },
         { status: 500 }
       );
     }
