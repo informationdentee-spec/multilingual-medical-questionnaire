@@ -130,19 +130,52 @@ npx ts-node scripts/seed-standard-template.ts
 
 ## テストクリニックの作成
 
-SupabaseのSQL Editorで以下を実行してテストクリニックを作成：
+管理画面にログインするには、テスト用のクリニック（テナント）を作成する必要があります。
+
+### 方法1: マイグレーションファイルを実行（推奨）
+
+SupabaseのSQL Editorで以下を実行：
 
 ```sql
--- パスワードは 'password123' のハッシュ（実際の運用では適切なパスワードを使用）
+-- supabase/migrations/005_create_test_clinic.sql の内容を実行
+```
+
+または、以下のSQLを直接実行：
+
+```sql
 INSERT INTO tenants (name, slug, email, password_hash, template_id)
 VALUES (
   'テストクリニック',
-  'test-clinic',
+  'test',
   'test@example.com',
-  '$2a$10$...', -- bcryptハッシュ
-  (SELECT id FROM form_templates WHERE template_name = '標準テンプレート' LIMIT 1)
-);
+  '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy',
+  NULL
+)
+ON CONFLICT (email) DO UPDATE SET
+  password_hash = EXCLUDED.password_hash,
+  name = EXCLUDED.name,
+  slug = EXCLUDED.slug;
+
+INSERT INTO clinic_settings (clinic_id, printer_email)
+VALUES ('test', NULL)
+ON CONFLICT (clinic_id) DO NOTHING;
 ```
+
+### 方法2: Node.jsスクリプトを使用
+
+```bash
+npx ts-node scripts/create-test-clinic.ts
+```
+
+### ログイン情報
+
+- **URL**: `https://multilingual-medical-questionnaire.vercel.app/admin/login`
+- **Email**: `test@example.com`
+- **Password**: `test1234`
+
+**注意**: 本番環境では、テスト用のパスワードを変更してください。
+
+詳細は `ADMIN_SETUP.md` を参照してください。
 
 ## ライセンス
 
