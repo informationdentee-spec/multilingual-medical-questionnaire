@@ -15,18 +15,44 @@ export default function PreviewPage() {
 
   const fetchPDF = async () => {
     try {
+      setLoading(true);
+      setError('');
+      console.log('[Preview] Fetching PDF for ID:', id);
+      
       const response = await fetch(`/api/pdf/${id}`);
+      console.log('[Preview] Response status:', response.status);
+      
       if (response.ok) {
-        const blob = await response.blob();
-        const url = URL.createObjectURL(blob);
-        setPdfUrl(url);
+        const contentType = response.headers.get('content-type');
+        console.log('[Preview] Content-Type:', contentType);
+        
+        if (contentType?.includes('application/pdf')) {
+          const blob = await response.blob();
+          console.log('[Preview] Blob created, size:', blob.size, 'bytes');
+          const url = URL.createObjectURL(blob);
+          setPdfUrl(url);
+        } else {
+          // If not PDF, try to parse as JSON error
+          const data = await response.json();
+          console.error('[Preview] Error response:', data);
+          setError(data.error || data.details || 'PDFの取得に失敗しました');
+        }
       } else {
-        const data = await response.json();
-        setError(data.error || 'PDFの取得に失敗しました');
+        // Try to parse error response
+        let errorMessage = 'PDFの取得に失敗しました';
+        try {
+          const data = await response.json();
+          errorMessage = data.error || data.details || errorMessage;
+          console.error('[Preview] Error response:', data);
+        } catch (parseError) {
+          console.error('[Preview] Failed to parse error response:', parseError);
+          errorMessage = `サーバーエラー (${response.status})`;
+        }
+        setError(errorMessage);
       }
     } catch (error) {
-      console.error('Error fetching PDF:', error);
-      setError('PDFの取得に失敗しました');
+      console.error('[Preview] Error fetching PDF:', error);
+      setError(`PDFの取得に失敗しました: ${error instanceof Error ? error.message : 'Unknown error'}`);
     } finally {
       setLoading(false);
     }

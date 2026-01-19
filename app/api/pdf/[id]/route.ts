@@ -10,26 +10,57 @@ export async function GET(
 ) {
   try {
     const { id } = await params;
+    console.log('[PDF API] Starting PDF generation for ID:', id);
 
-    // Get questionnaire response from questionnaire_responses table
+    // Step 1: Get questionnaire response from database
+    console.log('[PDF API] Step 1: Fetching questionnaire response...');
     const { data: response, error: responseError } = await supabaseAdmin
       .from('questionnaire_responses')
       .select('*')
       .eq('id', id)
       .single();
 
-    if (responseError || !response) {
+    if (responseError) {
+      console.error('[PDF API] Error fetching questionnaire response:', responseError);
+      return NextResponse.json(
+        { 
+          error: 'Questionnaire response not found',
+          details: responseError.message,
+        },
+        { status: 404 }
+      );
+    }
+
+    if (!response) {
+      console.error('[PDF API] Questionnaire response not found for ID:', id);
       return NextResponse.json(
         { error: 'Questionnaire response not found' },
         { status: 404 }
       );
     }
 
-    // Get template for label conversion
-    const template = await getTemplate(response.clinic_id);
-    const locale = response.locale || 'ja';
+    console.log('[PDF API] Questionnaire response found:', {
+      id: response.id,
+      clinic_id: response.clinic_id,
+      locale: response.locale,
+    });
 
-    // Convert JSONB data to formatted data for PDF
+    // Step 2: Get template for label conversion
+    console.log('[PDF API] Step 2: Getting template for clinic_id:', response.clinic_id);
+    let template;
+    try {
+      template = await getTemplate(response.clinic_id);
+      console.log('[PDF API] Template retrieved:', template ? 'found' : 'not found');
+    } catch (templateError) {
+      console.warn('[PDF API] Error getting template (continuing without template):', templateError);
+      template = null;
+    }
+
+    const locale = response.locale || 'ja';
+    console.log('[PDF API] Using locale:', locale);
+
+    // Step 3: Convert JSONB data to formatted data for PDF
+    console.log('[PDF API] Step 3: Converting data...');
     const data = response.data || {};
     
     // Prepare PDF data with proper label conversion
@@ -92,20 +123,39 @@ export async function GET(
       visit_day: data.visit_day || new Date().getDate(),
     };
 
-    // Read HTML template
-    const { readFileSync } = await import('fs');
-    const { join } = await import('path');
-    const templatePath = join(process.cwd(), 'lib', 'pdf', 'template.html');
-    const htmlTemplate = readFileSync(templatePath, 'utf-8');
+    console.log('[PDF API] Data conversion completed');
 
-    // Generate PDF
-    const pdfBuffer = await generatePDF({
-      template: htmlTemplate,
-      data: pdfData,
-    });
+    // Step 4: Read HTML template
+    console.log('[PDF API] Step 4: Reading HTML template...');
+    let htmlTemplate: string;
+    try {
+      const { readFileSync } = await import('fs');
+      const { join } = await import('path');
+      const templatePath = join(process.cwd(), 'lib', 'pdf', 'template.html');
+      console.log('[PDF API] Template path:', templatePath);
+      htmlTemplate = readFileSync(templatePath, 'utf-8');
+      console.log('[PDF API] Template file read successfully, length:', htmlTemplate.length);
+    } catch (fileError) {
+      console.error('[PDF API] Error reading template file:', fileError);
+      throw new Error(`Failed to read template file: ${fileError instanceof Error ? fileError.message : 'Unknown error'}`);
+    }
 
-    // Return PDF as binary
-    // Convert Buffer to Uint8Array for NextResponse compatibility
+    // Step 5: Generate PDF
+    console.log('[PDF API] Step 5: Generating PDF with Puppeteer...');
+    let pdfBuffer: Buffer;
+    try {
+      pdfBuffer = await generatePDF({
+        template: htmlTemplate,
+        data: pdfData,
+      });
+      console.log('[PDF API] PDF generated successfully, size:', pdfBuffer.length, 'bytes');
+    } catch (pdfError) {
+      console.error('[PDF API] Error generating PDF:', pdfError);
+      throw new Error(`PDF generation failed: ${pdfError instanceof Error ? pdfError.message : 'Unknown error'}`);
+    }
+
+    // Step 6: Return PDF as binary
+    console.log('[PDF API] Step 6: Returning PDF response...');
     return new NextResponse(new Uint8Array(pdfBuffer), {
       headers: {
         'Content-Type': 'application/pdf',
@@ -113,11 +163,16 @@ export async function GET(
       },
     });
   } catch (error) {
-    console.error('Error generating PDF:', error);
+    console.error('[PDF API] Fatal error:', {
+      error: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined,
+      name: error instanceof Error ? error.name : undefined,
+    });
     return NextResponse.json(
       { 
         error: 'Internal server error',
         details: error instanceof Error ? error.message : 'Unknown error',
+        stack: process.env.NODE_ENV === 'development' && error instanceof Error ? error.stack : undefined,
       },
       { status: 500 }
     );
