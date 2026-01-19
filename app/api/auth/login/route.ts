@@ -32,6 +32,7 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (tenantError || !tenant) {
+      console.error('Login error - tenant not found:', tenantError);
       recordFailedAttempt(email);
       return NextResponse.json(
         { error: 'Invalid email or password' },
@@ -42,6 +43,7 @@ export async function POST(request: NextRequest) {
     // Verify password
     const isValid = await verifyPassword(password, tenant.password_hash);
     if (!isValid) {
+      console.error('Login error - password verification failed for:', email);
       recordFailedAttempt(email);
       return NextResponse.json(
         { error: 'Invalid email or password' },

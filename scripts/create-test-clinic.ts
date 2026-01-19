@@ -49,20 +49,39 @@ async function createTestClinic() {
       .eq('email', clinicData.email)
       .single();
 
+    let tenant;
+    let tenantError;
+
     if (existingTenant) {
       console.log('\n⚠️  Test clinic already exists!');
       console.log('Existing tenant:', existingTenant);
-      console.log('\nTo update the password, run:');
-      console.log(`UPDATE tenants SET password_hash = '${passwordHash}' WHERE email = 'test@example.com';`);
-      return;
+      console.log('Updating password hash...');
+      
+      // 既存のテナントのパスワードハッシュを更新
+      const { data: updatedTenant, error: updateError } = await supabase
+        .from('tenants')
+        .update({
+          password_hash: passwordHash,
+          name: clinicData.name,
+          slug: clinicData.slug,
+        })
+        .eq('email', clinicData.email)
+        .select()
+        .single();
+      
+      tenant = updatedTenant;
+      tenantError = updateError;
+    } else {
+      // テナントを作成
+      const { data: newTenant, error: insertError } = await supabase
+        .from('tenants')
+        .insert(clinicData)
+        .select()
+        .single();
+      
+      tenant = newTenant;
+      tenantError = insertError;
     }
-
-    // テナントを作成
-    const { data: tenant, error: tenantError } = await supabase
-      .from('tenants')
-      .insert(clinicData)
-      .select()
-      .single();
 
     if (tenantError) {
       console.error('Error creating tenant:', tenantError);

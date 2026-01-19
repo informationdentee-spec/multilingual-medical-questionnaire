@@ -27,11 +27,12 @@ export default function LoginPage() {
       if (response.ok) {
         router.push('/admin');
       } else {
+        console.error('Login failed:', data);
         setError(data.error || 'ログインに失敗しました');
       }
     } catch (error) {
       console.error('Login error:', error);
-      setError('ログインに失敗しました');
+      setError('ログインに失敗しました。ネットワークエラーが発生した可能性があります。');
     } finally {
       setIsSubmitting(false);
     }
