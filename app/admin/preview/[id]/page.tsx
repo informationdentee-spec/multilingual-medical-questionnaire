@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
+import Link from 'next/link';
 
 export default function PreviewPage() {
   const router = useRouter();
@@ -78,7 +79,15 @@ export default function PreviewPage() {
     <div className="min-h-screen bg-gray-50 py-8 px-4">
       <div className="max-w-6xl mx-auto">
         <div className="flex justify-between items-center mb-4">
-          <h1 className="text-2xl font-bold">PDFプレビュー</h1>
+          <div className="flex items-center gap-4">
+            <Link
+              href={`/admin/questionnaires/${id}`}
+              className="text-blue-600 hover:text-blue-800 touch-manipulation"
+            >
+              ← 詳細に戻る
+            </Link>
+            <h1 className="text-2xl font-bold">PDFプレビュー</h1>
+          </div>
           <div className="flex gap-4">
             <button
               onClick={handlePrint}
