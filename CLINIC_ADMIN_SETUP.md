@@ -24,7 +24,49 @@
 
 ### 1-3. マイグレーションSQLを実行
 
+**重要：まず`clinic_settings`テーブルが存在するか確認してください。**
+
+#### ステップ1: テーブルの存在確認
+
+以下のSQLを実行して、テーブルが存在するか確認：
+
+```sql
+SELECT EXISTS (
+  SELECT FROM information_schema.tables 
+  WHERE table_schema = 'public' 
+  AND table_name = 'clinic_settings'
+);
+```
+
+- `true`が返ればテーブルは存在します → **ステップ2に進んでください**
+- `false`が返ればテーブルが存在しません → **ステップ1-Aを実行してください**
+
+#### ステップ1-A: テーブルが存在しない場合（テーブルを作成）
+
 以下のSQLをコピー＆ペーストして実行：
+
+```sql
+-- Create clinic_settings table to store clinic-specific settings
+CREATE TABLE IF NOT EXISTS clinic_settings (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  clinic_id TEXT NOT NULL UNIQUE,
+  printer_email TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Create index for faster lookups
+CREATE INDEX IF NOT EXISTS idx_clinic_settings_clinic_id ON clinic_settings(clinic_id);
+
+-- Add comment
+COMMENT ON TABLE clinic_settings IS 'Stores clinic-specific settings such as printer email addresses';
+```
+
+「**Run**」ボタンをクリックして実行します。
+
+#### ステップ2: 管理者情報カラムの追加
+
+テーブルが存在することを確認したら、以下のSQLをコピー＆ペーストして実行：
 
 ```sql
 -- clinic_settingsテーブルに管理者情報のカラムを追加
@@ -34,10 +76,14 @@ ADD COLUMN IF NOT EXISTS admin_password_hash TEXT;
 
 -- 管理者メールアドレスで検索しやすくするためのインデックスを作成
 CREATE INDEX IF NOT EXISTS idx_clinic_settings_admin_email ON clinic_settings(admin_email);
+
+-- Add comments
+COMMENT ON COLUMN clinic_settings.admin_email IS 'Administrator email address for this clinic';
+COMMENT ON COLUMN clinic_settings.admin_password_hash IS 'Bcrypt hash of administrator password';
 ```
 
-3. 「**Run**」ボタン（または `Ctrl+Enter`）をクリック
-4. 「Success. No rows returned」と表示されれば成功
+「**Run**」ボタン（または `Ctrl+Enter`）をクリック
+「Success. No rows returned」と表示されれば成功
 
 ---
 
