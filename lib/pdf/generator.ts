@@ -1,4 +1,5 @@
-import puppeteer from 'puppeteer';
+import puppeteer from 'puppeteer-core';
+import chromium from '@sparticuz/chromium-min';
 import { renderTemplate } from './template-engine';
 
 export interface PDFGenerationOptions {
@@ -6,8 +7,62 @@ export interface PDFGenerationOptions {
   data: any;
 }
 
+/**
+ * Get Chrome executable path for Vercel serverless environment
+ * Vercel環境では、@sparticuz/chromium-minを使用してChromeバイナリのパスを取得します
+ */
+async function getChromeExecutablePath(): Promise<string | undefined> {
+  console.log('[PDF Generator] getChromeExecutablePath: Checking environment...', {
+    VERCEL: process.env.VERCEL,
+    VERCEL_ENV: process.env.VERCEL_ENV,
+    AWS_LAMBDA_FUNCTION_NAME: process.env.AWS_LAMBDA_FUNCTION_NAME,
+  });
+
+  // Vercel環境では、@sparticuz/chromium-minを使用
+  const isVercel = process.env.VERCEL === '1' || process.env.VERCEL_ENV;
+  const isLambda = !!process.env.AWS_LAMBDA_FUNCTION_NAME;
+  
+  if (isVercel || isLambda) {
+    console.log('[PDF Generator] Detected serverless environment, using @sparticuz/chromium-min');
+    try {
+      // @sparticuz/chromium-minのexecutablePathを取得（非同期関数）
+      const executablePath = await chromium.executablePath();
+      
+      if (!executablePath) {
+        throw new Error('chromium.executablePath() returned empty value');
+      }
+      
+      console.log('[PDF Generator] Successfully got chromium executable path:', executablePath);
+      return executablePath;
+    } catch (error) {
+      console.error('[PDF Generator] Failed to get chromium executable path:', error);
+      console.error('[PDF Generator] Error details:', {
+        message: error instanceof Error ? error.message : 'Unknown error',
+        stack: error instanceof Error ? error.stack : undefined,
+      });
+      // エラーが発生した場合は例外を再スロー（必須）
+      throw error;
+    }
+  }
+  
+  // ローカル環境や環境変数で指定されている場合はそれを使用
+  if (process.env.CHROME_EXECUTABLE_PATH) {
+    console.log('[PDF Generator] Using CHROME_EXECUTABLE_PATH from environment:', process.env.CHROME_EXECUTABLE_PATH);
+    return process.env.CHROME_EXECUTABLE_PATH;
+  }
+  
+  // デフォルトではundefined（puppeteer-coreが自動的に見つける）
+  console.log('[PDF Generator] No custom Chrome path, using default Puppeteer Chrome');
+  return undefined;
+}
+
 export async function generatePDF({ template, data }: PDFGenerationOptions): Promise<Buffer> {
   console.log('[PDF Generator] Starting PDF generation...');
+  console.log('[PDF Generator] Environment:', {
+    NODE_ENV: process.env.NODE_ENV,
+    VERCEL: process.env.VERCEL,
+    AWS_LAMBDA_FUNCTION_NAME: process.env.AWS_LAMBDA_FUNCTION_NAME,
+  });
   
   // Step 1: Render template with data
   console.log('[PDF Generator] Step 1: Rendering template...');
@@ -20,38 +75,89 @@ export async function generatePDF({ template, data }: PDFGenerationOptions): Pro
     throw new Error(`Template rendering failed: ${renderError instanceof Error ? renderError.message : 'Unknown error'}`);
   }
 
-  // Step 2: Launch browser
+  // Step 2: Get Chrome executable path
+  console.log('[PDF Generator] Step 2: Getting Chrome executable path...');
+  const chromeExecutablePath = await getChromeExecutablePath();
+
+  // Step 3: Launch browser
   // Vercel環境では追加の引数が必要
-  console.log('[PDF Generator] Step 2: Launching Puppeteer browser...');
+  console.log('[PDF Generator] Step 3: Launching Puppeteer browser...');
+  console.log('[PDF Generator] Chrome executable path:', chromeExecutablePath || 'not set (using default)');
+  
   let browser;
   try {
-    browser = await puppeteer.launch({
-      headless: true,
-      args: [
-        '--no-sandbox',
-        '--disable-setuid-sandbox',
-        '--disable-dev-shm-usage',
-        '--disable-accelerated-2d-canvas',
-        '--no-first-run',
-        '--no-zygote',
-        '--single-process',
-        '--disable-gpu',
-      ],
+    // Vercel環境では@sparticuz/chromium-minのargsを使用、それ以外ではデフォルトのargsを使用
+    const defaultArgs = [
+      '--no-sandbox',
+      '--disable-setuid-sandbox',
+      '--disable-dev-shm-usage',
+      '--disable-accelerated-2d-canvas',
+      '--no-first-run',
+      '--no-zygote',
+      '--single-process',
+      '--disable-gpu',
+      '--disable-software-rasterizer',
+      '--disable-extensions',
+    ];
+
+    const isVercel = process.env.VERCEL === '1' || process.env.VERCEL_ENV;
+    const isLambda = !!process.env.AWS_LAMBDA_FUNCTION_NAME;
+    
+    // Vercel/Lambda環境では@sparticuz/chromium-minの設定を使用
+    const launchOptions: any = {
+      headless: (isVercel || isLambda) ? chromium.headless : true,
+      args: (isVercel || isLambda) 
+        ? [...(chromium.args || []), '--no-sandbox', '--disable-setuid-sandbox']
+        : defaultArgs,
+    };
+
+    // Chromeのパスが指定されている場合は使用（Vercel/Lambda環境では必須）
+    if (chromeExecutablePath) {
+      launchOptions.executablePath = chromeExecutablePath;
+      console.log('[PDF Generator] Using Chrome executable path:', chromeExecutablePath);
+    } else if (isVercel || isLambda) {
+      // Vercel/Lambda環境ではChromeパスが必須
+      console.error('[PDF Generator] ERROR: Chrome executable path is required in serverless environment but not found!');
+      throw new Error('Chrome executable path is required in serverless environment. Please ensure @sparticuz/chromium-min is properly installed.');
+    } else {
+      console.log('[PDF Generator] Using default Puppeteer Chrome (local development)');
+    }
+
+    // defaultViewportも設定（利用可能な場合）
+    if ((isVercel || isLambda) && chromium.defaultViewport) {
+      launchOptions.defaultViewport = chromium.defaultViewport;
+      console.log('[PDF Generator] Using chromium.defaultViewport');
+    }
+
+    console.log('[PDF Generator] Launch options:', {
+      headless: launchOptions.headless,
+      executablePath: launchOptions.executablePath ? 'set' : 'not set',
+      argsCount: launchOptions.args?.length || 0,
+      defaultViewport: launchOptions.defaultViewport ? 'set' : 'not set',
     });
+
+    browser = await puppeteer.launch(launchOptions);
     console.log('[PDF Generator] Browser launched successfully');
   } catch (launchError) {
     console.error('[PDF Generator] Error launching browser:', launchError);
+    console.error('[PDF Generator] Launch error details:', {
+      message: launchError instanceof Error ? launchError.message : 'Unknown error',
+      stack: launchError instanceof Error ? launchError.stack : undefined,
+      chromeExecutablePath: chromeExecutablePath || 'NOT SET',
+      isVercel: process.env.VERCEL === '1' || !!process.env.VERCEL_ENV,
+      isLambda: !!process.env.AWS_LAMBDA_FUNCTION_NAME,
+    });
     throw new Error(`Browser launch failed: ${launchError instanceof Error ? launchError.message : 'Unknown error'}`);
   }
 
   try {
-    // Step 3: Create new page
-    console.log('[PDF Generator] Step 3: Creating new page...');
+    // Step 4: Create new page
+    console.log('[PDF Generator] Step 4: Creating new page...');
     const page = await browser.newPage();
     console.log('[PDF Generator] Page created');
     
-    // Step 4: Set content with Japanese font support
-    console.log('[PDF Generator] Step 4: Setting page content...');
+    // Step 5: Set content with Japanese font support
+    console.log('[PDF Generator] Step 5: Setting page content...');
     try {
       await page.setContent(html, {
         waitUntil: 'networkidle0',
@@ -63,8 +169,8 @@ export async function generatePDF({ template, data }: PDFGenerationOptions): Pro
       throw new Error(`Failed to set page content: ${contentError instanceof Error ? contentError.message : 'Unknown error'}`);
     }
 
-    // Step 5: Wait for fonts to load
-    console.log('[PDF Generator] Step 5: Waiting for fonts to load...');
+    // Step 6: Wait for fonts to load
+    console.log('[PDF Generator] Step 6: Waiting for fonts to load...');
     try {
       await page.evaluateHandle(() => document.fonts.ready);
       console.log('[PDF Generator] Fonts loaded');
@@ -72,8 +178,8 @@ export async function generatePDF({ template, data }: PDFGenerationOptions): Pro
       console.warn('[PDF Generator] Warning: Font loading may have failed (continuing anyway):', fontError);
     }
 
-    // Step 6: Generate PDF with Japanese font support
-    console.log('[PDF Generator] Step 6: Generating PDF...');
+    // Step 7: Generate PDF with Japanese font support
+    console.log('[PDF Generator] Step 7: Generating PDF...');
     let pdf: Buffer;
     try {
       const pdfBuffer = await page.pdf({
@@ -100,8 +206,8 @@ export async function generatePDF({ template, data }: PDFGenerationOptions): Pro
     console.error('[PDF Generator] Error during PDF generation:', error);
     throw error;
   } finally {
-    // Step 7: Close browser
-    console.log('[PDF Generator] Step 7: Closing browser...');
+    // Step 8: Close browser
+    console.log('[PDF Generator] Step 8: Closing browser...');
     try {
       await browser.close();
       console.log('[PDF Generator] Browser closed');

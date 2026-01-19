@@ -5,6 +5,8 @@ const withNextIntl = createNextIntlPlugin('./lib/i18n/config.ts');
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  // Vercel環境でPuppeteerとChromiumを正しく動作させるため
+  serverExternalPackages: ['puppeteer-core', '@sparticuz/chromium-min'],
 }
 
 module.exports = withNextIntl(nextConfig)
