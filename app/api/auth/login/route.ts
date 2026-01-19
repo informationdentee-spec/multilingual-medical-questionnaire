@@ -32,7 +32,13 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (clinicError || !clinicSettings || !clinicSettings.admin_email || !clinicSettings.admin_password_hash) {
-      console.error('Login error - clinic admin not found:', clinicError);
+      console.error('Login error - clinic admin not found:', {
+        error: clinicError,
+        found: !!clinicSettings,
+        hasEmail: !!clinicSettings?.admin_email,
+        hasPassword: !!clinicSettings?.admin_password_hash,
+        searchedEmail: email
+      });
       recordFailedAttempt(email);
       return NextResponse.json(
         { error: 'Invalid email or password' },
