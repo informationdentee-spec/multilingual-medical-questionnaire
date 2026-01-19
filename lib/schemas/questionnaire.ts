@@ -1,37 +1,67 @@
 import { z } from 'zod';
 
+// Helper function to convert string to number or null
+const stringToNumber = (val: unknown): number | null => {
+  if (val === null || val === undefined || val === '') return null;
+  if (typeof val === 'number') return val;
+  if (typeof val === 'string') {
+    const parsed = parseInt(val, 10);
+    return isNaN(parsed) ? null : parsed;
+  }
+  return null;
+};
+
+// Helper function to convert string to boolean or null
+const stringToBoolean = (val: unknown): boolean | null => {
+  if (val === null || val === undefined || val === '') return null;
+  if (typeof val === 'boolean') return val;
+  if (typeof val === 'string') {
+    if (val === 'true' || val === 'あり') return true;
+    if (val === 'false' || val === 'なし') return false;
+    return null;
+  }
+  return null;
+};
+
+// Helper function to ensure array
+const ensureArray = (val: unknown): string[] => {
+  if (Array.isArray(val)) return val;
+  if (val === null || val === undefined || val === '') return [];
+  return [];
+};
+
 export const questionnaireSchema = z.object({
   name: z.string().min(1, '必須項目です'),
   sex: z.enum(['male', 'female']).refine((v) => v !== undefined, { message: '必須項目です' }),
-  birth_year: z.number().int().min(1900).max(new Date().getFullYear()).nullable(),
-  birth_month: z.number().int().min(1).max(12).nullable(),
-  birth_day: z.number().int().min(1).max(31).nullable(),
+  birth_year: z.preprocess(stringToNumber, z.number().int().min(1900).max(new Date().getFullYear()).nullable()),
+  birth_month: z.preprocess(stringToNumber, z.number().int().min(1).max(12).nullable()),
+  birth_day: z.preprocess(stringToNumber, z.number().int().min(1).max(31).nullable()),
   phone: z.string().optional(),
   address: z.string().optional(),
-  has_insurance: z.boolean().nullable(),
+  has_insurance: z.preprocess(stringToBoolean, z.boolean().nullable()),
   nationality: z.string().optional(),
-  symptoms: z.array(z.string()),
+  symptoms: z.preprocess(ensureArray, z.array(z.string())),
   symptom_other: z.string().optional(),
-  has_allergy: z.boolean().nullable(),
-  allergy_types: z.array(z.string()),
+  has_allergy: z.preprocess(stringToBoolean, z.boolean().nullable()),
+  allergy_types: z.preprocess(ensureArray, z.array(z.string())),
   allergy_other: z.string().optional(),
-  is_medicating: z.boolean().nullable(),
+  is_medicating: z.preprocess(stringToBoolean, z.boolean().nullable()),
   medication_detail: z.string().optional(),
-  anesthesia_trouble: z.boolean().nullable(),
-  has_extraction: z.boolean().nullable(),
-  is_pregnant: z.boolean().nullable(),
-  pregnancy_months: z.number().int().min(1).max(10).nullable(),
-  is_lactating: z.boolean().nullable(),
-  past_diseases: z.array(z.string()),
+  anesthesia_trouble: z.preprocess(stringToBoolean, z.boolean().nullable()),
+  has_extraction: z.preprocess(stringToBoolean, z.boolean().nullable()),
+  is_pregnant: z.preprocess(stringToBoolean, z.boolean().nullable()),
+  pregnancy_months: z.preprocess(stringToNumber, z.number().int().min(1).max(10).nullable()),
+  is_lactating: z.preprocess(stringToBoolean, z.boolean().nullable()),
+  past_diseases: z.preprocess(ensureArray, z.array(z.string())),
   disease_other: z.string().optional(),
-  has_under_treatment: z.boolean().nullable(),
+  has_under_treatment: z.preprocess(stringToBoolean, z.boolean().nullable()),
   disease_under_treatment_detail: z.string().optional(),
-  treatment_preferences: z.array(z.string()),
+  treatment_preferences: z.preprocess(ensureArray, z.array(z.string())),
   treatment_other: z.string().optional(),
-  can_bring_interpreter: z.boolean().nullable(),
-  visit_year: z.number().int().min(2000).max(new Date().getFullYear() + 1).nullable(),
-  visit_month: z.number().int().min(1).max(12).nullable(),
-  visit_day: z.number().int().min(1).max(31).nullable(),
+  can_bring_interpreter: z.preprocess(stringToBoolean, z.boolean().nullable()),
+  visit_year: z.preprocess(stringToNumber, z.number().int().min(2000).max(new Date().getFullYear() + 1).nullable()),
+  visit_month: z.preprocess(stringToNumber, z.number().int().min(1).max(12).nullable()),
+  visit_day: z.preprocess(stringToNumber, z.number().int().min(1).max(31).nullable()),
 });
 
 export type QuestionnaireFormInput = {
