@@ -31,12 +31,15 @@ export async function generatePDF({ template, data }: PDFGenerationOptions): Pro
   try {
     const page = await browser.newPage();
     
-    // Set content
+    // Set content with Japanese font support
     await page.setContent(html, {
       waitUntil: 'networkidle0',
     });
 
-    // Generate PDF
+    // Wait for fonts to load
+    await page.evaluateHandle(() => document.fonts.ready);
+
+    // Generate PDF with Japanese font support
     const pdf = await page.pdf({
       format: 'A4',
       margin: {
@@ -46,6 +49,7 @@ export async function generatePDF({ template, data }: PDFGenerationOptions): Pro
         left: '20mm',
       },
       printBackground: true,
+      preferCSSPageSize: true,
     });
 
     return Buffer.from(pdf);
