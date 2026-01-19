@@ -44,9 +44,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Get clinic_id from clinic_settings using admin_email
+    // Note: password_reset_tokens still uses tenant_id, but we need to map it to clinic_id
+    // For now, return clinic_id as null since we don't have the mapping
+    // This endpoint may need to be updated to work with clinic_settings instead of tenants
     return NextResponse.json({
       valid: true,
-      tenant_id: validToken.tenant_id,
+      clinic_id: null, // TODO: Map tenant_id to clinic_id if needed
     });
   } catch (error) {
     console.error('Error verifying reset token:', error);

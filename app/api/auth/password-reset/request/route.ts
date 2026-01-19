@@ -16,15 +16,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Get tenant by email
-    const { data: tenant, error: tenantError } = await supabaseAdmin
-      .from('tenants')
-      .select('id, email')
-      .eq('email', email)
+    // Get clinic settings by admin email
+    const { data: clinicSettings, error: clinicError } = await supabaseAdmin
+      .from('clinic_settings')
+      .select('clinic_id, admin_email')
+      .eq('admin_email', email)
       .single();
 
     // Don't reveal if email exists or not (security best practice)
-    if (tenantError || !tenant) {
+    if (clinicError || !clinicSettings || !clinicSettings.admin_email) {
       return NextResponse.json({
         message: 'If the email exists, a password reset link has been sent.',
       });
@@ -38,11 +38,14 @@ export async function POST(request: NextRequest) {
     const expiresAt = new Date();
     expiresAt.setMinutes(expiresAt.getMinutes() + 30);
 
-    // Save token to database
+    // Note: password_reset_tokens table still uses tenant_id
+    // We need to use clinic_id as a temporary workaround
+    // TODO: Update password_reset_tokens schema to use clinic_id instead of tenant_id
+    // For now, we'll use clinic_id as tenant_id (they're both strings)
     const { error: tokenError } = await supabaseAdmin
       .from('password_reset_tokens')
       .insert({
-        tenant_id: tenant.id,
+        tenant_id: clinicSettings.clinic_id, // Using clinic_id as tenant_id temporarily
         token_hash: tokenHash,
         expires_at: expiresAt.toISOString(),
         used: false,
@@ -63,7 +66,7 @@ export async function POST(request: NextRequest) {
     try {
       await resend.emails.send({
         from: process.env.RESEND_FROM_EMAIL || 'noreply@example.com',
-        to: tenant.email,
+        to: clinicSettings.admin_email,
         subject: 'パスワード再設定のご案内',
         html: `
           <h2>パスワード再設定のご案内</h2>

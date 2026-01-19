@@ -54,11 +54,12 @@ export async function POST(request: NextRequest) {
     // Hash new password
     const passwordHash = await hashPassword(newPassword);
 
-    // Update password
+    // Update password in clinic_settings
+    // Note: password_reset_tokens uses tenant_id which is actually clinic_id in our case
     const { error: updateError } = await supabaseAdmin
-      .from('tenants')
-      .update({ password_hash: passwordHash })
-      .eq('id', validToken.tenant_id);
+      .from('clinic_settings')
+      .update({ admin_password_hash: passwordHash })
+      .eq('clinic_id', validToken.tenant_id); // tenant_id is actually clinic_id
 
     if (updateError) {
       console.error('Error updating password:', updateError);
