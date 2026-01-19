@@ -36,10 +36,39 @@ export function QuestionnaireForm({ slug, locale, questionsJson }: Questionnaire
     return field[key][locale] || field[key]['ja'] || '';
   };
 
-  const onSubmit = async (data: QuestionnaireFormInput) => {
-    if (typeof window !== 'undefined') {
-      sessionStorage.setItem('questionnaireData', JSON.stringify(data));
-      window.location.href = `/clinic/${slug}/${locale}/confirm`;
+  const onSubmit = async (data: any) => {
+    setIsSubmitting(true);
+    try {
+      // Convert string values to proper types
+      const processedData: QuestionnaireFormInput = {
+        ...data,
+        // Convert boolean fields from string to boolean
+        has_insurance: data.has_insurance === 'true' ? true : data.has_insurance === 'false' ? false : null,
+        has_allergy: data.has_allergy === 'true' ? true : data.has_allergy === 'false' ? false : null,
+        is_medicating: data.is_medicating === 'true' ? true : data.is_medicating === 'false' ? false : null,
+        has_under_treatment: data.has_under_treatment === 'true' ? true : data.has_under_treatment === 'false' ? false : null,
+        // Convert number fields from string to number
+        birth_year: data.birth_year ? parseInt(data.birth_year, 10) || null : null,
+        birth_month: data.birth_month ? parseInt(data.birth_month, 10) || null : null,
+        birth_day: data.birth_day ? parseInt(data.birth_day, 10) || null : null,
+        pregnancy_months: data.pregnancy_months ? parseInt(data.pregnancy_months, 10) || null : null,
+        visit_year: data.visit_year ? parseInt(data.visit_year, 10) || null : null,
+        visit_month: data.visit_month ? parseInt(data.visit_month, 10) || null : null,
+        visit_day: data.visit_day ? parseInt(data.visit_day, 10) || null : null,
+        // Ensure arrays are arrays
+        symptoms: Array.isArray(data.symptoms) ? data.symptoms : [],
+        allergy_types: Array.isArray(data.allergy_types) ? data.allergy_types : [],
+        past_diseases: Array.isArray(data.past_diseases) ? data.past_diseases : [],
+        treatment_preferences: Array.isArray(data.treatment_preferences) ? data.treatment_preferences : [],
+      };
+
+      if (typeof window !== 'undefined') {
+        sessionStorage.setItem('questionnaireData', JSON.stringify(processedData));
+        window.location.href = `/clinic/${slug}/${locale}/confirm`;
+      }
+    } catch (error) {
+      console.error('Error submitting form:', error);
+      setIsSubmitting(false);
     }
   };
 
