@@ -161,7 +161,7 @@ export async function generatePDF({ template, data }: PDFGenerationOptions): Pro
     // Vercel/Lambda環境では@sparticuz/chromiumの設定を使用
     // chromium.argsには必要な共有ライブラリのパスなどが含まれている
     const launchOptions: any = {
-      headless: (isVercel || isLambda) ? chromium.headless : true,
+      headless: true, // サーバーレス環境では常にheadlessモード
       args: (isVercel || isLambda) 
         ? chromium.args || ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage', '--single-process']
         : defaultArgs,
@@ -174,15 +174,18 @@ export async function generatePDF({ template, data }: PDFGenerationOptions): Pro
     } else if (isVercel || isLambda) {
       // Vercel/Lambda環境ではChromeパスが必須
       console.error('[PDF Generator] ERROR: Chrome executable path is required in serverless environment but not found!');
-      throw new Error('Chrome executable path is required in serverless environment. Please ensure @sparticuz/chromium-min is properly installed.');
+      throw new Error('Chrome executable path is required in serverless environment. Please ensure @sparticuz/chromium is properly installed.');
     } else {
       console.log('[PDF Generator] Using default Puppeteer Chrome (local development)');
     }
 
-    // defaultViewportも設定（利用可能な場合）
-    if ((isVercel || isLambda) && chromium.defaultViewport) {
-      launchOptions.defaultViewport = chromium.defaultViewport;
-      console.log('[PDF Generator] Using chromium.defaultViewport');
+    // defaultViewportを設定（サーバーレス環境用）
+    if (isVercel || isLambda) {
+      launchOptions.defaultViewport = {
+        width: 1280,
+        height: 720,
+      };
+      console.log('[PDF Generator] Using defaultViewport for serverless environment');
     }
 
     console.log('[PDF Generator] Launch options:', {
