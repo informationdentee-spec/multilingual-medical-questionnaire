@@ -228,11 +228,30 @@ export async function generatePDF({ template, data }: PDFGenerationOptions): Pro
       throw new Error(`Failed to set page content: ${contentError instanceof Error ? contentError.message : 'Unknown error'}`);
     }
 
-    // Step 6: Wait for fonts to load
+    // Step 6: Wait for fonts to load (Noto Sans JP)
     console.log('[PDF Generator] Step 6: Waiting for fonts to load...');
     try {
-      await page.evaluateHandle(() => document.fonts.ready);
-      console.log('[PDF Generator] Fonts loaded');
+      // Google Fontsから読み込まれるNoto Sans JPフォントが確実に読み込まれるまで待つ
+      await page.evaluate(async () => {
+        // document.fonts.readyを待つ
+        await document.fonts.ready;
+        // Noto Sans JPフォントが読み込まれるまで追加で待機
+        const checkFont = async () => {
+          const fontFamilies = ['Noto Sans JP', 'Noto Sans'];
+          for (const fontFamily of fontFamilies) {
+            try {
+              await document.fonts.load(`400 1em "${fontFamily}"`);
+              await document.fonts.load(`700 1em "${fontFamily}"`);
+            } catch (e) {
+              console.warn(`Font loading warning for ${fontFamily}:`, e);
+            }
+          }
+        };
+        await checkFont();
+        // 追加の待機時間（フォントの完全な読み込みを保証）
+        await new Promise(resolve => setTimeout(resolve, 500));
+      });
+      console.log('[PDF Generator] Fonts loaded (Noto Sans JP)');
     } catch (fontError) {
       console.warn('[PDF Generator] Warning: Font loading may have failed (continuing anyway):', fontError);
     }
@@ -244,10 +263,10 @@ export async function generatePDF({ template, data }: PDFGenerationOptions): Pro
       const pdfBuffer = await page.pdf({
         format: 'A4',
         margin: {
-          top: '20mm',
-          right: '20mm',
-          bottom: '20mm',
-          left: '20mm',
+          top: '15mm',
+          right: '15mm',
+          bottom: '15mm',
+          left: '15mm',
         },
         printBackground: true,
         preferCSSPageSize: true,

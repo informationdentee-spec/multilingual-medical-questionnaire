@@ -65,13 +65,25 @@ export async function GET(
     const data = response.data || {};
     
     // Prepare PDF data with proper label conversion
+    // 生年月日を結合
+    const birthDate = [data.birth_year, data.birth_month, data.birth_day]
+      .filter(Boolean)
+      .join('年')
+      .replace(/(\d+)年(\d+)$/, '$1年$2月')
+      .replace(/(\d+)年(\d+)月(\d+)$/, '$1年$2月$3日') || '';
+    
+    // 来院日を結合
+    const visitDate = [data.visit_year, data.visit_month, data.visit_day]
+      .filter(Boolean)
+      .join('年')
+      .replace(/(\d+)年(\d+)$/, '$1年$2月')
+      .replace(/(\d+)年(\d+)月(\d+)$/, '$1年$2月$3日') || '';
+    
     const pdfData: any = {
       // Basic information
       name: data.name || '',
       sex: data.sex === 'male' ? '男' : data.sex === 'female' ? '女' : '',
-      birth_year: data.birth_year || '',
-      birth_month: data.birth_month || '',
-      birth_day: data.birth_day || '',
+      birth_date: birthDate,
       phone: data.phone || '',
       address: data.address || '',
       has_insurance: data.has_insurance === true ? 'あり' : data.has_insurance === false ? 'なし' : '',
@@ -119,9 +131,10 @@ export async function GET(
       // Interpreter
       can_bring_interpreter: data.can_bring_interpreter === true ? 'はい' : data.can_bring_interpreter === false ? 'いいえ' : '',
       // Visit date
-      visit_year: data.visit_year || new Date().getFullYear(),
-      visit_month: data.visit_month || new Date().getMonth() + 1,
-      visit_day: data.visit_day || new Date().getDate(),
+      visit_date: visitDate || (() => {
+        const now = new Date();
+        return `${now.getFullYear()}年${now.getMonth() + 1}月${now.getDate()}日`;
+      })(),
     };
 
     console.log('[PDF API] Data conversion completed');
