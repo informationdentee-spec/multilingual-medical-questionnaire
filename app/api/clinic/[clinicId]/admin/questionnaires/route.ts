@@ -12,6 +12,7 @@ export async function GET(
     // フィルターパラメータ
     const dateFilter = searchParams.get('date'); // 'today', 'yesterday', or ISO date string
     const symptomFilter = searchParams.get('symptom'); // symptom value
+    const nameFilter = searchParams.get('name'); // name search (partial match)
     
     // 日付フィルターの計算
     let dateFrom: string | null = null;
@@ -64,12 +65,19 @@ export async function GET(
       );
     }
     
-    // 症状フィルターを適用（データ側でフィルタリング）
+    // 症状フィルターと名前フィルターを適用（データ側でフィルタリング）
     let filteredResponses = responses || [];
     if (symptomFilter) {
       filteredResponses = filteredResponses.filter((response) => {
         const symptoms = response.data?.symptoms || [];
         return Array.isArray(symptoms) && symptoms.includes(symptomFilter);
+      });
+    }
+    if (nameFilter) {
+      const nameFilterLower = nameFilter.toLowerCase();
+      filteredResponses = filteredResponses.filter((response) => {
+        const name = response.data?.name || '';
+        return name.toLowerCase().includes(nameFilterLower);
       });
     }
     
