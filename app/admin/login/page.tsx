@@ -25,7 +25,13 @@ export default function LoginPage() {
       const data = await response.json();
 
       if (response.ok) {
-        router.push('/admin');
+        // ログイン成功後、clinic_idを使ってクリニック管理画面にリダイレクト
+        if (data.clinic_id) {
+          router.push(`/clinic/${data.clinic_id}/admin`);
+        } else {
+          // clinic_idが取得できない場合は従来の管理画面へ
+          router.push('/admin');
+        }
       } else {
         console.error('Login failed:', data);
         setError(data.error || 'ログインに失敗しました');
