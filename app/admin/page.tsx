@@ -22,6 +22,12 @@ export default function AdminDashboard() {
         router.push('/admin/login');
         return;
       }
+      const data = await response.json();
+      // ログイン成功後、clinic_idを使ってクリニック管理画面にリダイレクト
+      if (data.clinic_id) {
+        router.push(`/clinic/${data.clinic_id}/admin`);
+        return;
+      }
     } catch (error) {
       router.push('/admin/login');
     }
