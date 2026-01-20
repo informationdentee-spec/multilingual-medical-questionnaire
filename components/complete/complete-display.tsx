@@ -9,12 +9,7 @@ interface CompleteDisplayProps {
 }
 
 export function CompleteDisplay({ clinicId, locale }: CompleteDisplayProps) {
-  const router = useRouter();
   const t = useTranslations('complete');
-
-  const handleGoToReception = () => {
-    router.push(`/clinic/${clinicId}`);
-  };
 
   return (
     <div className="min-h-screen bg-gray-50 py-8 px-4 flex items-center justify-center">
@@ -27,15 +22,9 @@ export function CompleteDisplay({ clinicId, locale }: CompleteDisplayProps) {
           </div>
           <h1 className="text-2xl font-bold text-gray-900 mb-4">{t('title')}</h1>
         </div>
-        <p className="text-base text-gray-700 leading-relaxed mb-8">
+        <p className="text-base text-gray-700 leading-relaxed">
           {t('message')}
         </p>
-        <button
-          onClick={handleGoToReception}
-          className="bg-blue-600 text-white px-8 py-4 rounded-lg text-lg font-semibold hover:bg-blue-700 transition-colors touch-manipulation min-h-[60px] min-w-[200px] w-full"
-        >
-          {t('goToReception')}
-        </button>
       </div>
     </div>
   );

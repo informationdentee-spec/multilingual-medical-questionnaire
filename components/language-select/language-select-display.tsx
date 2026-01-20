@@ -34,37 +34,37 @@ export function LanguageSelectDisplay({ clinicId, clinicName }: LanguageSelectDi
   const displayClinicName = clinicName || `${clinicId}歯科クリニック`;
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white py-12 px-4">
+    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white py-12 px-4">
       <div className="max-w-2xl mx-auto">
         {/* クリニック名ヘッダー */}
         <div className="text-center mb-12">
-          <h1 className="text-4xl md:text-5xl font-bold text-gray-800 mb-2">
+          <h1 className="text-4xl md:text-5xl font-bold text-gray-800 mb-3">
             {displayClinicName}
           </h1>
-          <p className="text-xl md:text-2xl text-gray-600 font-medium">
+          <p className="text-xl md:text-2xl text-gray-600 font-normal">
             問診票入力ページ
           </p>
         </div>
 
         {/* メインコンテンツ */}
-        <div className="bg-white rounded-2xl shadow-lg p-8 md:p-12">
-          {/* 日本語メインボタン */}
-          <div className="mb-8">
+        <div className="bg-white rounded-xl shadow-md p-8 md:p-12 border border-gray-100">
+          {/* メインボタン（日本語） */}
+          <div className="mb-6">
             <button
               onClick={handleJapaneseClick}
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white text-xl font-semibold py-6 px-8 rounded-xl shadow-md hover:shadow-lg transition-all duration-200 active:scale-[0.98] touch-manipulation"
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white text-2xl font-bold py-7 px-8 rounded-xl shadow-md hover:shadow-lg transition-all duration-200 active:scale-[0.98] touch-manipulation"
             >
-              問診票を入力する
+              問診票を開始する
             </button>
           </div>
 
-          {/* その他の言語折りたたみメニュー */}
-          <div className="border-t border-gray-200 pt-8">
+          {/* 外国語ユーザー向け導線 */}
+          <div className="border-t border-gray-200 pt-6">
             <button
               onClick={() => setIsOtherLanguagesOpen(!isOtherLanguagesOpen)}
               className="w-full flex items-center justify-between text-gray-700 hover:text-gray-900 py-4 px-4 rounded-lg hover:bg-gray-50 transition-colors touch-manipulation"
             >
-              <span className="text-lg font-medium">その他の言語を選ぶ</span>
+              <span className="text-lg font-medium">Language options / 言語選択</span>
               <svg
                 className={`w-5 h-5 transition-transform duration-200 ${isOtherLanguagesOpen ? 'transform rotate-180' : ''}`}
                 fill="none"
