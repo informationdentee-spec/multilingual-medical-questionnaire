@@ -2,6 +2,8 @@ import { notFound } from 'next/navigation';
 import { locales } from '@/lib/i18n/config';
 import { getTemplate } from '@/lib/templates/get-template';
 import { ConfirmDisplay } from '@/components/confirm/confirm-display';
+import { NextIntlClientProvider } from 'next-intl';
+import { getMessages } from 'next-intl/server';
 
 interface PageProps {
   params: Promise<{ clinicId: string | string[] | undefined; locale: string | string[] | undefined }> | { clinicId: string | string[] | undefined; locale: string | string[] | undefined };
@@ -36,11 +38,16 @@ export default async function ConfirmPage({ params }: PageProps) {
     );
   }
 
+  // Get messages for the locale
+  const messages = await getMessages({ locale });
+
   return (
-    <ConfirmDisplay
-      questionsJson={questionsJson}
-      clinicId={clinicId}
-      locale={locale}
-    />
+    <NextIntlClientProvider messages={messages} locale={locale}>
+      <ConfirmDisplay
+        questionsJson={questionsJson}
+        clinicId={clinicId}
+        locale={locale}
+      />
+    </NextIntlClientProvider>
   );
 }

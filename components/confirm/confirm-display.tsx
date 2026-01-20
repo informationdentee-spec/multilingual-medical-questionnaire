@@ -2,6 +2,7 @@
 
 import { useRouter, useParams } from 'next/navigation';
 import { useState, useEffect } from 'react';
+import { useTranslations } from 'next-intl';
 import { QuestionnaireFormInput } from '@/lib/schemas/questionnaire';
 import { valuesToLabels } from '@/lib/templates/value-to-label';
 
@@ -13,6 +14,7 @@ interface ConfirmDisplayProps {
 
 export function ConfirmDisplay({ questionsJson, clinicId, locale }: ConfirmDisplayProps) {
   const router = useRouter();
+  const t = useTranslations('confirm');
   const [formData, setFormData] = useState<QuestionnaireFormInput | null>(null);
 
   useEffect(() => {
@@ -59,18 +61,18 @@ export function ConfirmDisplay({ questionsJson, clinicId, locale }: ConfirmDispl
       } else {
         // Display detailed error message
         const errorMessage = responseData.details 
-          ? `保存に失敗しました: ${responseData.details}`
+          ? `${t('saveError')}: ${responseData.details}`
           : responseData.error 
-          ? `保存に失敗しました: ${responseData.error}`
-          : '保存に失敗しました';
+          ? `${t('saveError')}: ${responseData.error}`
+          : t('saveError');
         console.error('Save error:', responseData);
         alert(errorMessage);
       }
     } catch (error) {
       console.error('Error submitting form:', error);
       const errorMessage = error instanceof Error 
-        ? `保存に失敗しました: ${error.message}`
-        : '保存に失敗しました';
+        ? `${t('saveError')}: ${error.message}`
+        : t('saveError');
       alert(errorMessage);
     }
   };
@@ -78,10 +80,30 @@ export function ConfirmDisplay({ questionsJson, clinicId, locale }: ConfirmDispl
   if (!formData) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <p>読み込み中...</p>
+        <p>{t('loading')}</p>
       </div>
     );
   }
+  
+  // Format date helper
+  const formatDate = (year: number | null, month: number | null, day: number | null) => {
+    if (!year || !month || !day) return '';
+    return `${year}${locale === 'ja' ? '年' : '/'}${month}${locale === 'ja' ? '月' : '/'}${day}${locale === 'ja' ? '日' : ''}`;
+  };
+  
+  // Format sex
+  const formatSex = (sex: string | null) => {
+    if (sex === 'male') return t('male');
+    if (sex === 'female') return t('female');
+    return '';
+  };
+  
+  // Format yes/no
+  const formatYesNo = (value: boolean | null) => {
+    if (value === true) return t('yes');
+    if (value === false) return t('no');
+    return '';
+  };
 
   // Convert values to labels for display
   const symptomLabels = formData.symptoms && formData.symptoms.length > 0
@@ -103,43 +125,43 @@ export function ConfirmDisplay({ questionsJson, clinicId, locale }: ConfirmDispl
   return (
     <div className="min-h-screen bg-gray-50 py-8 px-4">
       <div className="max-w-2xl mx-auto">
-        <h1 className="text-3xl font-bold text-center mb-8">確認</h1>
-        <p className="text-center mb-8 text-gray-600">以下の内容をご確認ください</p>
+        <h1 className="text-3xl font-bold text-center mb-8">{t('title')}</h1>
+        <p className="text-center mb-8 text-gray-600">{t('reviewMessage')}</p>
 
         <div className="bg-white p-6 rounded-lg shadow-md space-y-6 mb-8">
           <div>
-            <h2 className="text-xl font-semibold mb-4">基本情報</h2>
+            <h2 className="text-xl font-semibold mb-4">{t('basicInfo')}</h2>
             <div className="space-y-2">
-              <p><strong>氏名:</strong> {formData.name}</p>
-              <p><strong>性別:</strong> {formData.sex === 'male' ? '男' : '女'}</p>
+              <p><strong>{t('name')}:</strong> {formData.name}</p>
+              <p><strong>{t('sex')}:</strong> {formatSex(formData.sex)}</p>
               {formData.birth_year && formData.birth_month && formData.birth_day && (
-                <p><strong>生年月日:</strong> {formData.birth_year}年{formData.birth_month}月{formData.birth_day}日</p>
+                <p><strong>{t('birthDate')}:</strong> {formatDate(formData.birth_year, formData.birth_month, formData.birth_day)}</p>
               )}
-              {formData.phone && <p><strong>電話番号:</strong> {formData.phone}</p>}
-              {formData.address && <p><strong>住所:</strong> {formData.address}</p>}
+              {formData.phone && <p><strong>{t('phone')}:</strong> {formData.phone}</p>}
+              {formData.address && <p><strong>{t('address')}:</strong> {formData.address}</p>}
               {formData.has_insurance !== null && (
-                <p><strong>健康保険証:</strong> {formData.has_insurance ? 'あり' : 'なし'}</p>
+                <p><strong>{t('insurance')}:</strong> {formatYesNo(formData.has_insurance)}</p>
               )}
-              {formData.nationality && <p><strong>国籍:</strong> {formData.nationality}</p>}
+              {formData.nationality && <p><strong>{t('nationality')}:</strong> {formData.nationality}</p>}
             </div>
           </div>
 
           {symptomLabels.length > 0 && (
             <div>
-              <h2 className="text-xl font-semibold mb-4">症状</h2>
+              <h2 className="text-xl font-semibold mb-4">{t('symptoms')}</h2>
               <ul className="list-disc list-inside">
                 {symptomLabels.map((label, index) => (
                   <li key={index}>{label}</li>
                 ))}
               </ul>
-              {formData.symptom_other && <p className="mt-2">{formData.symptom_other}</p>}
+              {formData.symptom_other && <p className="mt-2"><strong>{t('other')}:</strong> {formData.symptom_other}</p>}
             </div>
           )}
 
           {formData.has_allergy !== null && (
             <div>
-              <h2 className="text-xl font-semibold mb-4">アレルギー</h2>
-              <p><strong>アレルギー:</strong> {formData.has_allergy ? 'あり' : 'なし'}</p>
+              <h2 className="text-xl font-semibold mb-4">{t('allergy')}</h2>
+              <p><strong>{t('allergy')}:</strong> {formatYesNo(formData.has_allergy)}</p>
               {allergyTypeLabels.length > 0 && (
                 <ul className="list-disc list-inside mt-2">
                   {allergyTypeLabels.map((label, index) => (
@@ -147,39 +169,39 @@ export function ConfirmDisplay({ questionsJson, clinicId, locale }: ConfirmDispl
                   ))}
                 </ul>
               )}
-              {formData.allergy_other && <p className="mt-2">{formData.allergy_other}</p>}
+              {formData.allergy_other && <p className="mt-2"><strong>{t('other')}:</strong> {formData.allergy_other}</p>}
             </div>
           )}
 
           {formData.is_medicating !== null && (
             <div>
-              <h2 className="text-xl font-semibold mb-4">服薬</h2>
-              <p><strong>服薬中:</strong> {formData.is_medicating ? 'あり' : 'なし'}</p>
-              {formData.medication_detail && <p className="mt-2">{formData.medication_detail}</p>}
+              <h2 className="text-xl font-semibold mb-4">{t('medication')}</h2>
+              <p><strong>{t('medicating')}:</strong> {formatYesNo(formData.is_medicating)}</p>
+              {formData.medication_detail && <p className="mt-2"><strong>{t('medicationDetail')}:</strong> {formData.medication_detail}</p>}
             </div>
           )}
 
           {pastDiseaseLabels.length > 0 && (
             <div>
-              <h2 className="text-xl font-semibold mb-4">既往歴</h2>
+              <h2 className="text-xl font-semibold mb-4">{t('medicalHistory')}</h2>
               <ul className="list-disc list-inside">
                 {pastDiseaseLabels.map((label, index) => (
                   <li key={index}>{label}</li>
                 ))}
               </ul>
-              {formData.disease_other && <p className="mt-2">{formData.disease_other}</p>}
+              {formData.disease_other && <p className="mt-2"><strong>{t('other')}:</strong> {formData.disease_other}</p>}
             </div>
           )}
 
           {treatmentPreferenceLabels.length > 0 && (
             <div>
-              <h2 className="text-xl font-semibold mb-4">治療希望</h2>
+              <h2 className="text-xl font-semibold mb-4">{t('treatmentPreferences')}</h2>
               <ul className="list-disc list-inside">
                 {treatmentPreferenceLabels.map((label, index) => (
                   <li key={index}>{label}</li>
                 ))}
               </ul>
-              {formData.treatment_other && <p className="mt-2">{formData.treatment_other}</p>}
+              {formData.treatment_other && <p className="mt-2"><strong>{t('other')}:</strong> {formData.treatment_other}</p>}
             </div>
           )}
         </div>
@@ -189,13 +211,13 @@ export function ConfirmDisplay({ questionsJson, clinicId, locale }: ConfirmDispl
             onClick={handleEdit}
             className="bg-gray-500 text-white px-8 py-4 rounded-lg text-lg font-semibold hover:bg-gray-600 touch-manipulation min-h-[60px] min-w-[200px]"
           >
-            編集
+            {t('edit')}
           </button>
           <button
             onClick={handleSubmit}
             className="bg-blue-600 text-white px-8 py-4 rounded-lg text-lg font-semibold hover:bg-blue-700 touch-manipulation min-h-[60px] min-w-[200px]"
           >
-            送信
+            {t('submit')}
           </button>
         </div>
       </div>
