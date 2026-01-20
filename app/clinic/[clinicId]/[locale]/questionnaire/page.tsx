@@ -2,6 +2,8 @@ import { notFound } from 'next/navigation';
 import { locales } from '@/lib/i18n/config';
 import { QuestionnaireForm } from '@/components/questionnaire/questionnaire-form';
 import { getTemplate } from '@/lib/templates/get-template';
+import { NextIntlClientProvider } from 'next-intl';
+import { getMessages } from 'next-intl/server';
 
 interface PageProps {
   params: Promise<{ clinicId: string | string[] | undefined; locale: string | string[] | undefined }> | { clinicId: string | string[] | undefined; locale: string | string[] | undefined };
@@ -36,13 +38,18 @@ export default async function QuestionnairePage({ params }: PageProps) {
     );
   }
 
+  // Get messages for the locale
+  const messages = await getMessages({ locale });
+
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <QuestionnaireForm
-        slug={clinicId}
-        locale={locale}
-        questionsJson={questionsJson}
-      />
-    </div>
+    <NextIntlClientProvider messages={messages} locale={locale}>
+      <div className="min-h-screen bg-gray-50 py-8">
+        <QuestionnaireForm
+          slug={clinicId}
+          locale={locale}
+          questionsJson={questionsJson}
+        />
+      </div>
+    </NextIntlClientProvider>
   );
 }

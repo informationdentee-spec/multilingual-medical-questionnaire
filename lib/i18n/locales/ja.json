@@ -55,9 +55,14 @@
   "pdf": {
     "title": "歯科問診票"
   },
+  "questionnaire": {
+    "confirm": "確認",
+    "submitting": "送信中...",
+    "templateError": "テンプレートを読み込めませんでした"
+  },
   "complete": {
-    "title": "保存完了",
-    "message": "問診票を保存しました",
-    "newQuestionnaire": "新しい問診票を入力する"
+    "title": "回答完了",
+    "message": "回答が完了しました。受付スタッフが確認しますので、そのまま窓口へお越しください。",
+    "goToReception": "受付へ進む"
   }
 }

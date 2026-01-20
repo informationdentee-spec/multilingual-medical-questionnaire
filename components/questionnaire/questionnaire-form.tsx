@@ -4,6 +4,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { questionnaireSchema, QuestionnaireFormInput } from '@/lib/schemas/questionnaire';
 import { useState, useEffect } from 'react';
+import { useTranslations } from 'next-intl';
 
 interface QuestionnaireFormProps {
   slug: string;
@@ -12,6 +13,7 @@ interface QuestionnaireFormProps {
 }
 
 export function QuestionnaireForm({ slug, locale, questionsJson }: QuestionnaireFormProps) {
+  const t = useTranslations('questionnaire');
   const {
     register,
     handleSubmit,
@@ -61,7 +63,7 @@ export function QuestionnaireForm({ slug, locale, questionsJson }: Questionnaire
   };
 
   if (!questionsJson || !questionsJson.sections) {
-    return <div>テンプレートを読み込めませんでした</div>;
+    return <div>{t('templateError')}</div>;
   }
 
   return (
@@ -194,7 +196,7 @@ export function QuestionnaireForm({ slug, locale, questionsJson }: Questionnaire
           disabled={isSubmitting}
           className="bg-blue-600 text-white px-8 py-4 rounded-lg text-lg font-semibold hover:bg-blue-700 disabled:opacity-50 touch-manipulation min-h-[60px] min-w-[200px]"
         >
-          {isSubmitting ? '送信中...' : '確認'}
+          {isSubmitting ? t('submitting') : t('confirm')}
         </button>
       </div>
     </form>

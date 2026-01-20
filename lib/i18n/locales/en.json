@@ -55,9 +55,14 @@
   "pdf": {
     "title": "Dental Questionnaire"
   },
+  "questionnaire": {
+    "confirm": "Confirm",
+    "submitting": "Submitting...",
+    "templateError": "Failed to load template"
+  },
   "complete": {
-    "title": "Saved",
-    "message": "Questionnaire saved successfully",
-    "newQuestionnaire": "Enter New Questionnaire"
+    "title": "Completed",
+    "message": "Your response has been submitted. The reception staff will review it. Please proceed to the reception desk.",
+    "goToReception": "Go to Reception"
   }
 }
