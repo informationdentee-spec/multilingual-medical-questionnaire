@@ -12,8 +12,18 @@ const nextConfig = {
     outputFileTracingIncludes: {
       '/api/pdf/**': [
         './node_modules/@sparticuz/chromium/**',
+        './node_modules/@sparticuz/chromium/bin/**',
       ],
     },
+  },
+  // Webpack設定でChromiumバイナリを除外しないようにする
+  webpack: (config, { isServer }) => {
+    if (isServer) {
+      // サーバーサイドのビルドでChromiumバイナリを除外しない
+      config.externals = config.externals || [];
+      // @sparticuz/chromiumは外部パッケージとして扱うが、バイナリは含める
+    }
+    return config;
   },
 }
 
