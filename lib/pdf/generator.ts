@@ -28,7 +28,7 @@ async function getChromeExecutablePath(): Promise<string | undefined> {
       // @sparticuz/chromiumのexecutablePathを取得
       // Vercel環境では、chromium.executablePath()が/var/task/.next/server/binを探そうとするが、
       // そのディレクトリが存在しないため、直接パスを構築する必要がある
-      let executablePath: string;
+      let executablePath: string | undefined;
       
       // 環境変数でリモートURLが指定されている場合はそれを使用
       if (process.env.CHROMIUM_REMOTE_EXEC_PATH) {
@@ -44,13 +44,13 @@ async function getChromeExecutablePath(): Promise<string | undefined> {
         // まず、chromium.executablePath()を試す（エラーが発生する可能性がある）
         try {
           console.log('[PDF Generator] Trying chromium.executablePath()...');
-          executablePath = await chromium.executablePath();
-          console.log('[PDF Generator] chromium.executablePath() returned:', executablePath);
+          const execPath = await chromium.executablePath();
+          console.log('[PDF Generator] chromium.executablePath() returned:', execPath);
           
           // パスが存在するか確認
-          if (executablePath && fs.existsSync(executablePath)) {
+          if (execPath && fs.existsSync(execPath)) {
             console.log('[PDF Generator] chromium.executablePath() path exists');
-            return executablePath;
+            executablePath = execPath;
           } else {
             console.log('[PDF Generator] chromium.executablePath() path does not exist, trying fallback...');
           }
@@ -58,22 +58,24 @@ async function getChromeExecutablePath(): Promise<string | undefined> {
           console.log('[PDF Generator] chromium.executablePath() failed, trying fallback:', execPathError instanceof Error ? execPathError.message : 'Unknown error');
         }
         
-        // フォールバック: 直接パスを構築
-        const possiblePaths = [
-          path.join('/var/task', 'node_modules', '@sparticuz', 'chromium', 'bin', 'chromium'),
-          path.join(process.cwd(), 'node_modules', '@sparticuz', 'chromium', 'bin', 'chromium'),
-        ];
-        
-        for (const possiblePath of possiblePaths) {
-          console.log('[PDF Generator] Checking path:', possiblePath);
-          try {
-            if (fs.existsSync(possiblePath)) {
-              console.log('[PDF Generator] Found chromium at:', possiblePath);
-              executablePath = possiblePath;
-              break;
+        // フォールバック: 直接パスを構築（executablePathがまだ設定されていない場合）
+        if (!executablePath) {
+          const possiblePaths = [
+            path.join('/var/task', 'node_modules', '@sparticuz', 'chromium', 'bin', 'chromium'),
+            path.join(process.cwd(), 'node_modules', '@sparticuz', 'chromium', 'bin', 'chromium'),
+          ];
+          
+          for (const possiblePath of possiblePaths) {
+            console.log('[PDF Generator] Checking path:', possiblePath);
+            try {
+              if (fs.existsSync(possiblePath)) {
+                console.log('[PDF Generator] Found chromium at:', possiblePath);
+                executablePath = possiblePath;
+                break;
+              }
+            } catch (checkError) {
+              console.log('[PDF Generator] Path check failed:', checkError);
             }
-          } catch (checkError) {
-            console.log('[PDF Generator] Path check failed:', checkError);
           }
         }
         
