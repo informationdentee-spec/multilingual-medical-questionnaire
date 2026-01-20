@@ -1,5 +1,5 @@
 import puppeteer from 'puppeteer-core';
-import chromium from '@sparticuz/chromium-min';
+import chromium from '@sparticuz/chromium';
 import { renderTemplate } from './template-engine';
 
 export interface PDFGenerationOptions {
@@ -9,7 +9,7 @@ export interface PDFGenerationOptions {
 
 /**
  * Get Chrome executable path for Vercel serverless environment
- * Vercel環境では、@sparticuz/chromium-minを使用してChromeバイナリのパスを取得します
+ * Vercel環境では、@sparticuz/chromiumを使用してChromeバイナリのパスを取得します
  */
 async function getChromeExecutablePath(): Promise<string | undefined> {
   console.log('[PDF Generator] getChromeExecutablePath: Checking environment...', {
@@ -23,13 +23,31 @@ async function getChromeExecutablePath(): Promise<string | undefined> {
   const isLambda = !!process.env.AWS_LAMBDA_FUNCTION_NAME;
   
   if (isVercel || isLambda) {
-    console.log('[PDF Generator] Detected serverless environment, using @sparticuz/chromium-min');
+    console.log('[PDF Generator] Detected serverless environment, using @sparticuz/chromium');
     try {
-      // @sparticuz/chromium-minのexecutablePathを取得（非同期関数）
-      const executablePath = await chromium.executablePath();
+      // @sparticuz/chromiumのexecutablePathを取得
+      // Vercel環境では、executablePath()を引数なしで呼び出すと
+      // /var/task/.next/server/binを探そうとするが、そのディレクトリが存在しない
+      // そのため、node_modules内のバイナリを直接参照する
+      let executablePath: string;
+      
+      // 環境変数でリモートURLが指定されている場合はそれを使用
+      if (process.env.CHROMIUM_REMOTE_EXEC_PATH) {
+        console.log('[PDF Generator] Using remote chromium URL:', process.env.CHROMIUM_REMOTE_EXEC_PATH);
+        executablePath = await chromium.executablePath(process.env.CHROMIUM_REMOTE_EXEC_PATH);
+      } else {
+        // Vercel環境では、node_modules内のバイナリを直接参照
+        // executablePath()を引数なしで呼び出すとエラーになるため、
+        // 直接パスを構築する
+        const path = require('path');
+        // Vercel環境では、/var/task/node_modules/@sparticuz/chromium/bin/chromium が存在するはず
+        const chromiumPath = path.join('/var/task', 'node_modules', '@sparticuz', 'chromium', 'bin', 'chromium');
+        console.log('[PDF Generator] Using direct chromium path:', chromiumPath);
+        executablePath = chromiumPath;
+      }
       
       if (!executablePath) {
-        throw new Error('chromium.executablePath() returned empty value');
+        throw new Error('chromium executable path is empty');
       }
       
       console.log('[PDF Generator] Successfully got chromium executable path:', executablePath);
@@ -40,7 +58,6 @@ async function getChromeExecutablePath(): Promise<string | undefined> {
         message: error instanceof Error ? error.message : 'Unknown error',
         stack: error instanceof Error ? error.stack : undefined,
       });
-      // エラーが発生した場合は例外を再スロー（必須）
       throw error;
     }
   }
