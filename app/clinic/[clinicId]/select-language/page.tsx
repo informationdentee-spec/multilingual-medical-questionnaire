@@ -1,7 +1,6 @@
 import { notFound } from 'next/navigation';
-import { languages } from '@/lib/i18n/languages';
 import { supabaseAdmin } from '@/lib/supabase/server';
-import { LanguageButton } from '@/components/ui/language-button';
+import { LanguageSelectDisplay } from '@/components/language-select/language-select-display';
 
 interface PageProps {
   params: Promise<{ clinicId: string | string[] | undefined }> | { clinicId: string | string[] | undefined };
@@ -37,20 +36,10 @@ export default async function SelectLanguagePage({ params }: PageProps) {
   // Test mode: If clinicId is "test", allow access without database check
   if (clinicId === 'test') {
     return (
-      <div className="min-h-screen bg-gray-50 py-8 px-4">
-        <div className="max-w-4xl mx-auto">
-          <h1 className="text-3xl font-bold text-center mb-8">言語を選択</h1>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
-            {languages.map((language) => (
-              <LanguageButton
-                key={language.code}
-                language={language}
-                clinicId={clinicId}
-              />
-            ))}
-          </div>
-        </div>
-      </div>
+      <LanguageSelectDisplay
+        clinicId={clinicId}
+        clinicName="テスト歯科クリニック"
+      />
     );
   }
 
@@ -64,19 +53,9 @@ export default async function SelectLanguagePage({ params }: PageProps) {
 
   // Display language selection page
   return (
-    <div className="min-h-screen bg-gray-50 py-8 px-4">
-      <div className="max-w-4xl mx-auto">
-        <h1 className="text-3xl font-bold text-center mb-8">言語を選択</h1>
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
-          {languages.map((language) => (
-            <LanguageButton
-              key={language.code}
-              language={language}
-              clinicId={clinicId}
-            />
-          ))}
-        </div>
-      </div>
-    </div>
+    <LanguageSelectDisplay
+      clinicId={clinicId}
+      clinicName={tenant.name || undefined}
+    />
   );
 }
