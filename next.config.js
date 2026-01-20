@@ -9,6 +9,7 @@ const nextConfig = {
   serverExternalPackages: ['puppeteer-core', '@sparticuz/chromium'],
   // Chromiumバイナリを含めるための設定
   experimental: {
+    serverComponentsExternalPackages: ['puppeteer-core', '@sparticuz/chromium'],
     outputFileTracingIncludes: {
       '/api/pdf/**': [
         './node_modules/@sparticuz/chromium/**',
