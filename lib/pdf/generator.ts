@@ -158,11 +158,12 @@ export async function generatePDF({ template, data }: PDFGenerationOptions): Pro
     const isVercel = process.env.VERCEL === '1' || process.env.VERCEL_ENV;
     const isLambda = !!process.env.AWS_LAMBDA_FUNCTION_NAME;
     
-    // Vercel/Lambda環境では@sparticuz/chromium-minの設定を使用
+    // Vercel/Lambda環境では@sparticuz/chromiumの設定を使用
+    // chromium.argsには必要な共有ライブラリのパスなどが含まれている
     const launchOptions: any = {
       headless: (isVercel || isLambda) ? chromium.headless : true,
       args: (isVercel || isLambda) 
-        ? [...(chromium.args || []), '--no-sandbox', '--disable-setuid-sandbox']
+        ? chromium.args || ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage', '--single-process']
         : defaultArgs,
     };
 
